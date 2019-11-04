@@ -237,7 +237,6 @@ class MealClassifier:
         reduced_feature_df = self.reduce_dimensions(feature_df)
 
         # TODO
-        reduced_feature_df = pd.concat([reduced_feature_df, processed_df['meal']], axis = 1)
         print(reduced_feature_df.head())
         X_train, X_test, y_train, y_test = train_test_split(reduced_feature_df, processed_df.meal)
         # classifiers
@@ -253,7 +252,7 @@ class MealClassifier:
             print("Classifiers: ", classifier.__class__.__name__, "Has a training score of",
                   round(training_score.mean(), 2) * 100, "% accuracy score")
 
-
+        # TODO: add method for labelling a sample
 
 
         print("Meal Classification Model ... DONE.")
@@ -269,9 +268,9 @@ if __name__ == '__main__':
 # 3. NaN handling
 
 # TASKS-
-# a) Extract features from Meal and No Meal data
-# b) Make sure that the features are discriminatory
-# c) Each student trains a separate machine to recognize Meal or No Meal data
-# d) Use k fold cross validation on the training data to evaluate your recognition system
+# a) DONE - Extract features from Meal and No Meal data
+# b) DONE - Make sure that the features are discriminatory
+# c) DONE - Each student trains a separate machine to recognize Meal or No Meal data
+# d) DONE - Use k fold cross validation on the training data to evaluate your recognition system
 # e) Each student write a function that takes one test sample as input
 # and outputs 1 if it predicts the test sample as meal or 0 if it predicts test sample as No meal.
