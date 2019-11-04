@@ -3,8 +3,8 @@ Given sugar values over a 150 minutes time period, classify each instance as "me
 
 EXECUTION INSTRUCTIONS:
 
-python MealClassifier.py
-<enter for default input path>
+- python MealClassifier.py
+- --enter-- for default input path
 
 ABSTRACT:
 
