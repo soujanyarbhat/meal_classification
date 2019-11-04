@@ -1,6 +1,11 @@
 # meal_classification
 Given sugar values over a 150 minutes time period, classify each instance as "meal" or "no meal".
 
+EXECUTION INSTRUCTIONS:
+
+python MealClassifier.py
+<enter for default input path>
+
 ABSTRACT:
 
 The aim of the project is to study the glucose levels in diabetic patients during the course of a potential meal and design a model to detect whether a meal was actually taken in the recorded data. The data is collected using a CGM(continuous glucose monitoring) device recording sugar values. 
