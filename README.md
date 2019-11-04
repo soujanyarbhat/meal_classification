@@ -4,7 +4,7 @@ Given sugar values over a 150 minutes time period, classify each instance as "me
 TODO:
 - Handle NaN values
 - Change in features(if reqd.)
-- Classifiers- check accuracy
+- Classifiers- check accuracy & remove warning messages
 
 EXECUTION INSTRUCTIONS:
 
