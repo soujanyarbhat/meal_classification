@@ -26,9 +26,14 @@ from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.model_selection import KFold
 import scipy.stats
 import matplotlib.pyplot as plt
 import numpy as np
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 class MealClassifier:
 
@@ -87,7 +92,7 @@ class MealClassifier:
     def process_data(self, raw_meal_df, raw_nomeal_df):
         print("Pre-processing ...")
 
-        # TODO: Handle NaN - CURRENT: delete col 31
+        # TODO: Handle NaN - CURRENT: delete col 31. NOTE = no NaN in TEST DATA
 
         del raw_meal_df['Col31']
         del raw_nomeal_df['Col31']
@@ -213,19 +218,60 @@ class MealClassifier:
         pca = PCA(n_components = 5)
         principal_components = pca.fit(feature_df)
         principal_components_trans = pca.fit_transform(feature_df)
-        pc_time_series = pd.DataFrame(data = principal_components_trans,
+        pca_df = pd.DataFrame(data = principal_components_trans,
                                       columns = ['principal component 1', 'principal component 2',
                                                  'principal component 3',
                                                  'principal component 4', 'principal component 5'])
 
         # print(principal_components.components_)  # Principal Components vs Original Features
         print(principal_components.explained_variance_ratio_.cumsum())
+        print("PCA dataframe - \n", pca_df.head())
         print("Dimensionality reduction ... DONE.")
-        return pc_time_series
+        return pca_df
         # plotting explained variance versus principle componenets
         # pcs = ['PC1', 'PC2', 'PC3', 'PC4', 'PC5']
         # plt.bar(pcs, principal_components.explained_variance_ratio_ * 100)
         # plt.savefig('variance.png')
+
+    # Test classifiers and returns the highest accuracy scorer
+    # 1. Logistic regression
+    # 2. K-nearest
+    # 3. Support vector
+    # 4. Decision tree
+    def choose_classifier(self, X, y):
+        print("Classifier testing ...")
+
+        classifiers = {
+            "LogisticRegression": LogisticRegression(),
+            "KNearest": KNeighborsClassifier(),
+            "SupportVectorClassifier": SVC(),
+            "DecisionTreeClassifier": DecisionTreeClassifier(),
+            "RandomForestClassifier": RandomForestClassifier(),
+            "NaiveBayesClassifier": GaussianNB()
+        }
+        # best classifier object and corresponding maximum mean accuracy
+        max_score = float("-inf")
+        best_model = None
+        cv = KFold(n_splits=5)
+        for key, classifier in classifiers.items():
+            scores = []
+            for train_index, test_index in cv.split(X):
+                X_train, X_test, y_train, y_test = X.iloc[train_index], X.iloc[test_index], \
+                                                   y.iloc[train_index], y.iloc[test_index]
+                classifier.fit(X_train, y_train)
+                training_score = cross_val_score(classifier, X_test, y_test)
+                scores.append(round(training_score.mean(), 2) * 100)
+                # print("Classifiers: ", classifier.__class__.__name__, "Has a training score of",
+                #       round(training_score.mean(), 2) * 100, "% accuracy score")
+
+            mean_score = sum(scores) / len(scores)
+            print("{} -> {}".format(classifier.__class__.__name__, mean_score))
+            if mean_score > max_score:
+                max_score = mean_score
+                best_model = classifier
+
+        print("Classifier testing ... DONE.")
+        return best_model
 
     def run_model(self):
 
@@ -235,26 +281,14 @@ class MealClassifier:
         processed_unlabelled_df = processed_df.drop('meal', 1)
         feature_df = self.extract_features(processed_unlabelled_df)
         reduced_feature_df = self.reduce_dimensions(feature_df)
+        self.choose_classifier(reduced_feature_df, processed_df.meal)  # TODO: return best model
 
-        # TODO
-        print(reduced_feature_df.head())
-        X_train, X_test, y_train, y_test = train_test_split(reduced_feature_df, processed_df.meal)
-        # classifiers
-        classifiers = {
-            "LogisticRegression": LogisticRegression(),
-            "KNearest": KNeighborsClassifier(),
-            "Support Vector Classifier": SVC(),
-            "DecisionTreeClassifier": DecisionTreeClassifier()
-        }
-        for key, classifier in classifiers.items():
-            classifier.fit(X_train, y_train)
-            training_score = cross_val_score(classifier, X_train, y_train)
-            print("Classifiers: ", classifier.__class__.__name__, "Has a training score of",
-                  round(training_score.mean(), 2) * 100, "% accuracy score")
-
-        # TODO: add method for labelling a sample
-
-
+        # TODO: complete K fold
+        # TODO: add test script
+        # TODO: finalize classifier
+        # TODO: finalize features
+        # TODO: save model
+        # TODO: save eigen values
         print("Meal Classification Model ... DONE.")
 
 
