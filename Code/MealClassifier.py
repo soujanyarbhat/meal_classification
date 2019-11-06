@@ -15,6 +15,7 @@ import pandas as pd
 from pandas import read_csv
 from pandas import concat
 from pandas import DataFrame
+from scipy.interpolate import UnivariateSpline
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.tsa.seasonal import seasonal_decompose
 from sklearn.decomposition import PCA
@@ -34,8 +35,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
+import pickle
+
 
 class MealClassifier:
+
+    OUTPUT_PATH_PLOTS = os.path.join(os.path.dirname(__file__), '..' + os.sep, 'Plots')
+    OUTPUT_PATH_MODEL = os.path.join(os.path.dirname(__file__), '..' + os.sep, 'Model')
 
     def __init__(self):
         print("Meal Classification Model ...")
@@ -84,6 +90,13 @@ class MealClassifier:
 
         return raw_meal_df, raw_nomeal_df
 
+    def plot_cgm(self, df, index=10, filename="Meal", color='g'):
+        df.T.iloc[:, 0:index].plot(color=color)
+        plt.ylabel('CGM')
+        plt.xlabel('Time')
+        plt.savefig(self.OUTPUT_PATH_PLOTS + os.sep + filename+".png")
+        plt.clf()
+
     # Reverses columns
     # Adds label to meal and no meal data
     # Interpolates NaN values
@@ -98,7 +111,15 @@ class MealClassifier:
         del raw_nomeal_df['Col31']
 
         processed_meal_df = raw_meal_df.iloc[:, ::-1].dropna(how = 'all')
+
+        # print("Meal data Processed-\n", processed_meal_df.head())
+        self.plot_cgm(processed_meal_df, 5)
+
         processed_nomeal_df = raw_nomeal_df.iloc[:, ::-1].dropna(how = 'all')
+
+        # print("No Meal data Processed-\n", processed_nomeal_df.head())
+        self.plot_cgm(processed_nomeal_df, 5, filename="NoMeal", color="r")
+
         processed_meal_df.loc[:, 'meal'] = 1
         processed_nomeal_df.loc[:, 'meal'] = 0
         concat_df = pd.concat([processed_meal_df, processed_nomeal_df])
@@ -120,10 +141,8 @@ class MealClassifier:
 
         rows, cols = data_df.shape
         window_size = 5
-        velocity_df = pd.DataFrame()
         for i in range(0, cols - window_size):
-            velocity_df['Vel_' + str(i)] = (data_df.iloc[:, i + window_size] - data_df.iloc[:, i])
-        new_features['Window_Velocity_Max'] = velocity_df.max(axis = 1)
+            new_features['Vel_' + str(i)] = (data_df.iloc[:, i + window_size] - data_df.iloc[:, i])
 
         print("Extracting Velocity ... DONE.")
         # Plotting
@@ -186,6 +205,20 @@ class MealClassifier:
         # plt.xlabel('Days')
         # plt.savefig('Entropy.png')
 
+    def poly_fit(self, data_df, new_features):
+        print("Extracting polynomial fit coeffs ...")
+
+        # Calculates polynomial fit coeffs for the data points
+        poly = pd.DataFrame()
+        rows, cols = data_df.shape
+        poly['PolyFit'] = data_df.apply(lambda row: np.polyfit(range(cols), row, 5), axis = 1)
+        print(poly.head())
+        poly_updated = pd.DataFrame(poly.PolyFit.tolist(), columns=['poly_fit1', 'poly_fit2', 'poly_fit3', 'poly_fit4', 'poly_fit5', 'poly_fit6']) #, poly_fit7', 'poly_fit8', 'poly_fit9', 'poly_fit10', 'poly_fit11'])
+
+        print("Extracting polynomial fit coeffs ... DONE.")
+
+        return new_features.join(poly_updated)
+
     # Extracts 4 features from time series data
     # 1. Maximum window velocity
     # 2. Windowed mean
@@ -203,6 +236,8 @@ class MealClassifier:
         feature_df = self.extract_fft(data_df, feature_df)
         # FEATURE 4 -> Calculates entropy(from occurrences of each value) of given series
         self.extract_entropy(data_df, feature_df)
+        # FEATURE 5 -> Calculates polynomial fit coefficients of given series
+        feature_df = self.poly_fit(data_df, feature_df)
 
         print("Feature size - ", feature_df.shape)
         print("Features - \n", feature_df.head())
@@ -233,6 +268,7 @@ class MealClassifier:
         # plt.bar(pcs, principal_components.explained_variance_ratio_ * 100)
         # plt.savefig('variance.png')
 
+
     # Test classifiers and returns the highest accuracy scorer
     # 1. Logistic regression
     # 2. K-nearest
@@ -252,14 +288,14 @@ class MealClassifier:
         # best classifier object and corresponding maximum mean accuracy
         max_score = float("-inf")
         best_model = None
-        cv = KFold(n_splits=5)
+        cv = KFold(n_splits=10)
         for key, classifier in classifiers.items():
             scores = []
             for train_index, test_index in cv.split(X):
                 X_train, X_test, y_train, y_test = X.iloc[train_index], X.iloc[test_index], \
                                                    y.iloc[train_index], y.iloc[test_index]
                 classifier.fit(X_train, y_train)
-                training_score = cross_val_score(classifier, X_test, y_test)
+                training_score = cross_val_score(classifier, X_test, y_test, cv=10)
                 scores.append(round(training_score.mean(), 2) * 100)
                 # print("Classifiers: ", classifier.__class__.__name__, "Has a training score of",
                 #       round(training_score.mean(), 2) * 100, "% accuracy score")
@@ -273,6 +309,40 @@ class MealClassifier:
         print("Classifier testing ... DONE.")
         return best_model
 
+
+    def classifier(self, X,y):
+
+        NB = LogisticRegression()
+        cv = KFold(n_splits=10)
+
+        for train_index, test_index in cv.split(X):
+            TP, TN, FP, FN = 0, 0, 0, 0
+            X_train, X_test, y_train, y_test = X.iloc[train_index], X.iloc[test_index], y.iloc[train_index], y.iloc[test_index]
+
+            NB.fit(X_train, y_train)
+            for index in test_index:
+                predicted = NB.predict([X.iloc[index]])
+                if predicted == y.iloc[index] and y.iloc[index] == 1:
+                    TP += 1
+                elif (not predicted == y.iloc[index]) and y.iloc[index] == 1:
+                    FN += 1
+                elif predicted == y.iloc[index] and y.iloc[index] == 0:
+                    TN += 1
+                else:
+                    FP += 1
+            print("Accuracy: ", (TP+TN)/(TP+TN+FP+FN))
+        return NB
+
+    # saves classifier to file
+    def save_model(self, model):
+        print("Saving model to file ...")
+
+        file_path = self.OUTPUT_PATH_MODEL + os.sep + "chosen_model.sav"  # TODO: change file with classifier name
+        pickle.dump(model, open(file_path, 'wb'))
+        print("Model saved in file- ", file_path)
+        print("Saving model to file ... DONE.")
+
+    # controller function to run all tasks
     def run_model(self):
 
         input_path = self.read_path()
@@ -281,14 +351,15 @@ class MealClassifier:
         processed_unlabelled_df = processed_df.drop('meal', 1)
         feature_df = self.extract_features(processed_unlabelled_df)
         reduced_feature_df = self.reduce_dimensions(feature_df)
-        self.choose_classifier(reduced_feature_df, processed_df.meal)  # TODO: return best model
+        best_model = self.choose_classifier(reduced_feature_df, processed_df.meal)
 
-        # TODO: complete K fold
+        print("The chosen model(in terms of highest average score)- ", best_model.__class__.__name__)
+        self.save_model(best_model)
         # TODO: add test script
-        # TODO: finalize classifier
+        # TODO: finalize classifier- CHOOSE
         # TODO: finalize features
         # TODO: save model
-        # TODO: save eigen values
+        # TODO: save eigen values ??
         print("Meal Classification Model ... DONE.")
 
 
