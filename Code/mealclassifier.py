@@ -99,19 +99,19 @@ class MealClassifier:
         plt.savefig(self.OUTPUT_PATH_PLOTS + os.sep + filename+".png")
         plt.clf()
 
-        # Noisy 'meal' data is Removed/marked as meal=0
-        def remove_noise(self, meal_df):
-            # assumptions
-            dip_window = 6
-            max_cgm = 250
+    # Noisy 'meal' data is Removed/marked as meal=0
+    def remove_noise(self, meal_df):
+        # assumptions
+        dip_window = 6
+        max_cgm = 250
 
-            noises = meal_df[meal_df.iloc[:, 6] > max_cgm].index
+        noises = meal_df[meal_df.iloc[:, 6] > max_cgm].index
+        
+        # Marks the noise as no-meal
+        meal_df.loc[noises, 'meal'] = 0
 
-            # Marks the noise as no-meal
-            meal_df.loc[noises, 'meal'] = 0
-
-            # Removes the entire noise row (take care of split size during classification if rows are removed)
-            # meal_df.drop(noises , inplace=True)
+        # Removes the entire noise row (take care of split size during classification if rows are removed)
+        # meal_df.drop(noises , inplace=True)
 
     # Reverses columns
     # Adds label to meal and no meal data
