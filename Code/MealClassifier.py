@@ -90,12 +90,29 @@ class MealClassifier:
 
         return raw_meal_df, raw_nomeal_df
 
+    # Plots cgm values
     def plot_cgm(self, df, index=10, filename="Meal", color='g'):
         df.T.iloc[:, 0:index].plot(color=color)
         plt.ylabel('CGM')
         plt.xlabel('Time')
         plt.savefig(self.OUTPUT_PATH_PLOTS + os.sep + filename+".png")
         plt.clf()
+
+    # Noisy 'meal' data is Removed/marked as meal=0
+    def remove_noise(self, meal_df):
+
+        # assumptions
+        dip_window = 6
+        max_cgm = 250
+
+        noises = meal_df[meal_df.iloc[:, 6] > max_cgm].index
+
+        # Marks the noise as no-meal
+        meal_df.loc[noises, 'meal'] = 0
+
+        # Removes the entire noise row (take care of split size during classification if rows are removed)
+        # meal_df.drop(noises , inplace=True)
+
 
     # Reverses columns
     # Adds label to meal and no meal data
@@ -121,6 +138,9 @@ class MealClassifier:
         self.plot_cgm(processed_nomeal_df, 5, filename="NoMeal", color="r")
 
         processed_meal_df.loc[:, 'meal'] = 1
+        # Considering CGM levels above 250 at 6th window as noise. Remove them/mark them as no-meal
+        self.remove_noise(processed_meal_df)
+
         processed_nomeal_df.loc[:, 'meal'] = 0
         concat_df = pd.concat([processed_meal_df, processed_nomeal_df])
         meal_df = concat_df.drop('meal', 1)
@@ -288,14 +308,14 @@ class MealClassifier:
         # best classifier object and corresponding maximum mean accuracy
         max_score = float("-inf")
         best_model = None
-        cv = KFold(n_splits=10)
+        cv = KFold(n_splits=5)
         for key, classifier in classifiers.items():
             scores = []
             for train_index, test_index in cv.split(X):
                 X_train, X_test, y_train, y_test = X.iloc[train_index], X.iloc[test_index], \
                                                    y.iloc[train_index], y.iloc[test_index]
                 classifier.fit(X_train, y_train)
-                training_score = cross_val_score(classifier, X_test, y_test, cv=10)
+                training_score = cross_val_score(classifier, X_test, y_test, cv=5)
                 scores.append(round(training_score.mean(), 2) * 100)
                 # print("Classifiers: ", classifier.__class__.__name__, "Has a training score of",
                 #       round(training_score.mean(), 2) * 100, "% accuracy score")
@@ -312,8 +332,8 @@ class MealClassifier:
 
     def classifier(self, X,y):
 
-        NB = LogisticRegression()
-        cv = KFold(n_splits=10)
+        NB = GaussianNB()
+        cv = KFold(n_splits=5)
 
         for train_index, test_index in cv.split(X):
             TP, TN, FP, FN = 0, 0, 0, 0
