@@ -29,20 +29,34 @@ import pickle
 
 from mealclassifier import MealClassifier
 
-#Importing Class from mealclassifier
-mc = MealClassifier()
-# path for the saved model
-model_path = '..\Model\chosen_model.sav'
-# path for testing file
-file_path = input('Please enter the data set directory path\n')
-final = pd.read_csv(file_path,header = None)
-final = final.iloc[:, ::-1].astype(int)
-# print(final)
-feature_df = mc.extract_features(final)
-reduced_feature_df = mc.reduce_dimensions(feature_df)
-# print(reduced_feature_df)
-loaded_model = pickle.load(open(model_path, 'rb'))
-result = loaded_model.predict(reduced_feature_df)
-# results
-print(result)
+class TestMealClassifier():
 
+    def __init__(self):
+        print("Testing Meal Classifier ...")
+
+    # Imports saved model
+    # Converts test data to reduced feature matrix
+    # Labels test data and saves to file
+    def test_model(self):
+
+        meal_classifier = MealClassifier()
+        model_path = meal_classifier.OUTPUT_PATH_MODEL
+        file_path = input('Please enter the data set directory path\n')
+        final = pd.read_csv(file_path, header=None)
+        final = final.iloc[:, ::-1].astype(int)
+        # print(final)
+        feature_df = meal_classifier.extract_features(final)
+        reduced_feature_df = meal_classifier.reduce_dimensions(feature_df)
+        # print(reduced_feature_df)
+        loaded_model = pickle.load(open(model_path, 'rb'))
+        result = loaded_model.predict(reduced_feature_df)
+        # results
+        print(result)
+
+
+
+        print("Testing Meal Classifier ... DONE.")
+
+if __name__ == '__main__':
+    test_meal_classifier = TestMealClassifier()
+    test_meal_classifier.test_model()
