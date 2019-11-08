@@ -34,25 +34,31 @@ import scipy.stats
 import matplotlib.pyplot as plt
 import numpy as np
 import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+
+warnings.simplefilter(action = 'ignore', category = FutureWarning)
 import pickle
 
 
 class MealClassifier:
 
-    OUTPUT_PATH_PLOTS = os.path.join(os.path.dirname(__file__), '..' + os.sep, 'Plots')
-    OUTPUT_PATH_MODEL = os.path.join(os.path.dirname(__file__), '..' + os.sep, 'Model')
+    OUTPUT_PATH_PLOTS = os.path.join(os.path.dirname(__file__), '..', 'Plots')
+    OUTPUT_PATH_MODEL = os.path.join(os.path.dirname(__file__), '..', 'Model')
+    OUTPUT_MODEL_FILENAMES = {
+        "LogisticRegression": 'model_varun.sav',
+        "GaussianNB": 'model_soujanya.sav',
+        "SVC": 'model_aryan.sav',
+        "RandomForestClassifier": 'model_gourav.sav'
+    }
 
     def __init__(self):
         print("Meal Classification Model ...")
-    
 
     # Input path for data set- USER INPUT
     def read_path(self):
         print("Reading input directory ... ")
 
         current_dir = os.path.dirname(__file__)
-        folder_path = os.path.join(current_dir, '..' + os.sep, 'Input')
+        folder_path = os.path.join(current_dir, '..', 'Input')
         pre_configured_path = os.path.abspath(folder_path)
         temp_data_set_folder = input('Please enter the data set directory path\n'
                                      'OR\nHit enter to use %s: ' % pre_configured_path)
@@ -69,7 +75,7 @@ class MealClassifier:
 
         # Handles issues with ragged CSV file
         col_names = ["Col1", "Col2", "Col3", "Col4", "Col5", "Col6", "Col7", "Col8", "Col9", "Col10",
-                     "Col11", "Col12", "Col13", "Col14", "Col15", "Col16","Col17", "Col18", "Col19", "Col20",
+                     "Col11", "Col12", "Col13", "Col14", "Col15", "Col16", "Col17", "Col18", "Col19", "Col20",
                      "Col21", "Col22", "Col23", "Col24", "Col25", "Col26", "Col27", "Col28", "Col29", "Col30", "Col31"]
         # Lists all files in input directory
         input_files = [f for f in listdir(input_path) if isfile(join(input_path, f))]
@@ -82,43 +88,43 @@ class MealClassifier:
             else:
                 raw_meal_df = pd.concat([raw_meal_df, input_df])
 
-        print("Meal data size -\n", raw_meal_df.shape)
-        print("No Meal data size -\n", raw_nomeal_df.shape)
-        print("Meal data -\n", raw_meal_df.head())
-        print("No Meal data -\n", raw_nomeal_df.head())
+        print("Meal data size - ", raw_meal_df.shape)
+        print("No Meal data size - ", raw_nomeal_df.shape)
+        # print("Meal data -\n", raw_meal_df.head())
+        # print("No Meal data -\n", raw_nomeal_df.head())
 
         print("Reading data ... DONE.")
 
         return raw_meal_df, raw_nomeal_df
 
     # Plots cgm values
-    def plot_cgm(self, df, index=10, filename="Meal", color='g'):
-        df.T.iloc[:, 0:index].plot(color=color)
+    def plot_cgm(self, df, index = 10, filename = "Meal", color = 'g'):
+        df.T.iloc[:, 0:index].plot(color = color)
         plt.ylabel('CGM')
         plt.xlabel('Time')
-        plt.savefig(self.OUTPUT_PATH_PLOTS + os.sep + filename+".png")
+        plt.savefig(self.OUTPUT_PATH_PLOTS + os.sep + filename + ".png")
         plt.clf()
 
-    # Noisy 'meal' data is Removed/marked as meal=0
-    def remove_noise(self, meal_df):
-        # assumptions
-        dip_window = 6
-        max_cgm = 250
-
-        noises = meal_df[meal_df.iloc[:, 6] > max_cgm].index
-        
-        # Marks the noise as no-meal
-        meal_df.loc[noises, 'meal'] = 0
-
-        # Removes the entire noise row (take care of split size during classification if rows are removed)
-        # meal_df.drop(noises , inplace=True)
+    # # Noisy 'meal' data is Removed/marked as meal=0
+    # def remove_noise(self, meal_df):
+    #     # assumptions
+    #     dip_window = 6
+    #     max_cgm = 250
+    #
+    #     noises = meal_df[meal_df.iloc[:, 6] > max_cgm].index
+    #
+    #     # Marks the noise as no-meal
+    #     meal_df.loc[noises, 'meal'] = 0
+    #
+    #     # Removes the entire noise row (take care of split size during classification if rows are removed)
+    #     # meal_df.drop(noises , inplace=True)
 
     # Reverses columns
     # Adds label to meal and no meal data
     # Interpolates NaN values
     # Shuffles rows
     # Removes rows- all NaN or high NaN count
-    def process_data(self, raw_meal_df, raw_nomeal_df):
+    def preprocess_data(self, raw_meal_df, raw_nomeal_df):
         print("Pre-processing ...")
 
         # TODO: Handle NaN - CURRENT: delete col 31. NOTE = no NaN in TEST DATA
@@ -134,22 +140,22 @@ class MealClassifier:
         processed_nomeal_df = raw_nomeal_df.iloc[:, ::-1].dropna(how = 'all')
 
         # print("No Meal data Processed-\n", processed_nomeal_df.head())
-        self.plot_cgm(processed_nomeal_df, 5, filename="NoMeal", color="r")
+        self.plot_cgm(processed_nomeal_df, 5, filename = "NoMeal", color = "r")
 
         processed_meal_df.loc[:, 'meal'] = 1
         # Considering CGM levels above 250 at 6th window as noise. Remove them/mark them as no-meal
-        self.remove_noise(processed_meal_df)
+        # self.remove_noise(processed_meal_df)
 
         processed_nomeal_df.loc[:, 'meal'] = 0
         concat_df = pd.concat([processed_meal_df, processed_nomeal_df])
         meal_df = concat_df.drop('meal', 1)
-        meal_df.interpolate(method='linear', inplace=True)
+        meal_df.interpolate(method = 'linear', inplace = True)
         meal_df = pd.concat([meal_df, concat_df['meal']], axis = 1)
         meal_df = meal_df.sample(frac = 1)
-        meal_df = meal_df.reset_index(drop=True)
+        meal_df = meal_df.reset_index(drop = True)
 
-        print("Processed data size- ", meal_df.shape)
-        print("Processed data -\n", meal_df.head())
+        print("Processed data size - ", meal_df.shape)
+        # print("Processed data -\n", meal_df.head())
         print("Pre-processing ... DONE.")
 
         return meal_df
@@ -231,8 +237,10 @@ class MealClassifier:
         poly = pd.DataFrame()
         rows, cols = data_df.shape
         poly['PolyFit'] = data_df.apply(lambda row: np.polyfit(range(cols), row, 5), axis = 1)
-        print(poly.head())
-        poly_updated = pd.DataFrame(poly.PolyFit.tolist(), columns=['poly_fit1', 'poly_fit2', 'poly_fit3', 'poly_fit4', 'poly_fit5', 'poly_fit6']) #, poly_fit7', 'poly_fit8', 'poly_fit9', 'poly_fit10', 'poly_fit11'])
+        # print(poly.head())
+        poly_updated = pd.DataFrame(poly.PolyFit.tolist(),
+                                    columns = ['poly_fit1', 'poly_fit2', 'poly_fit3', 'poly_fit4', 'poly_fit5',
+                                               'poly_fit6'])  # , poly_fit7', 'poly_fit8', 'poly_fit9', 'poly_fit10', 'poly_fit11'])
 
         print("Extracting polynomial fit coeffs ... DONE.")
 
@@ -258,8 +266,8 @@ class MealClassifier:
         # FEATURE 5 -> Calculates polynomial fit coefficients of given series
         feature_df = self.poly_fit(data_df, feature_df)
 
-        print("Feature size - ", feature_df.shape)
-        print("Features - \n", feature_df.head())
+        # print("Feature size - ", feature_df.shape)
+        # print("Features - \n", feature_df.head())
         return feature_df
 
     # PCA
@@ -273,13 +281,13 @@ class MealClassifier:
         principal_components = pca.fit(feature_df)
         principal_components_trans = pca.fit_transform(feature_df)
         pca_df = pd.DataFrame(data = principal_components_trans,
-                                      columns = ['principal component 1', 'principal component 2',
-                                                 'principal component 3',
-                                                 'principal component 4', 'principal component 5'])
+                              columns = ['principal component 1', 'principal component 2',
+                                         'principal component 3',
+                                         'principal component 4', 'principal component 5'])
 
         # print(principal_components.components_)  # Principal Components vs Original Features
-        print(principal_components.explained_variance_ratio_.cumsum())
-        print("PCA dataframe - \n", pca_df.head())
+        # print(principal_components.explained_variance_ratio_.cumsum())
+        # print("PCA dataframe - \n", pca_df.head())
         print("Dimensionality reduction ... DONE.")
         return pca_df
         # plotting explained variance versus principle componenets
@@ -287,98 +295,65 @@ class MealClassifier:
         # plt.bar(pcs, principal_components.explained_variance_ratio_ * 100)
         # plt.savefig('variance.png')
 
+    # saves classifier to file
+    def save_model(self, model):
+
+        output_path = os.path.join(self.OUTPUT_PATH_MODEL, self.OUTPUT_MODEL_FILENAMES[model.__class__.__name__])
+        pickle.dump(model, open(output_path, 'wb'))
+
+        print("Model saved in file- ", output_path)
 
     # Test classifiers and returns the highest accuracy scorer
     # 1. Logistic regression
     # 2. K-nearest
     # 3. Support vector
     # 4. Decision tree
-    def choose_classifier(self, X, y):
-        print("Classifier testing ...")
+    def train_models(self, X, y):
+        print("Classifier Test ...")
 
         classifiers = {
             "LogisticRegression": LogisticRegression(),
-            "KNearest": KNeighborsClassifier(),
+            # "KNearest": KNeighborsClassifier(),
             "SupportVectorClassifier": SVC(),
-            "DecisionTreeClassifier": DecisionTreeClassifier(),
+            # "DecisionTreeClassifier": DecisionTreeClassifier(),
             "RandomForestClassifier": RandomForestClassifier(),
             "NaiveBayesClassifier": GaussianNB()
         }
         # best classifier object and corresponding maximum mean accuracy
         max_score = float("-inf")
-        best_model = None
-        cv = KFold(n_splits=5)
+        cv = KFold(n_splits = 5)
         for key, classifier in classifiers.items():
             scores = []
             for train_index, test_index in cv.split(X):
                 X_train, X_test, y_train, y_test = X.iloc[train_index], X.iloc[test_index], \
                                                    y.iloc[train_index], y.iloc[test_index]
                 classifier.fit(X_train, y_train)
-                training_score = cross_val_score(classifier, X_test, y_test, cv=5)
+                training_score = cross_val_score(classifier, X_test, y_test, cv = 5)
                 scores.append(round(training_score.mean(), 2) * 100)
                 # print("Classifiers: ", classifier.__class__.__name__, "Has a training score of",
                 #       round(training_score.mean(), 2) * 100, "% accuracy score")
 
             mean_score = sum(scores) / len(scores)
             print("{} -> {}".format(classifier.__class__.__name__, mean_score))
-            if mean_score > max_score:
-                max_score = mean_score
-                best_model = classifier
+            self.save_model(classifier)
 
-        print("Classifier testing ... DONE.")
-        return best_model
-
-
-    def classifier(self, X,y):
-
-        NB = GaussianNB()
-        cv = KFold(n_splits=5)
-
-        for train_index, test_index in cv.split(X):
-            TP, TN, FP, FN = 0, 0, 0, 0
-            X_train, X_test, y_train, y_test = X.iloc[train_index], X.iloc[test_index], y.iloc[train_index], y.iloc[test_index]
-
-            NB.fit(X_train, y_train)
-            for index in test_index:
-                predicted = NB.predict([X.iloc[index]])
-                if predicted == y.iloc[index] and y.iloc[index] == 1:
-                    TP += 1
-                elif (not predicted == y.iloc[index]) and y.iloc[index] == 1:
-                    FN += 1
-                elif predicted == y.iloc[index] and y.iloc[index] == 0:
-                    TN += 1
-                else:
-                    FP += 1
-            print("Accuracy: ", (TP+TN)/(TP+TN+FP+FN))
-        return NB
-
-    # saves classifier to file
-    def save_model(self, model):
-        print("Saving model to file ...")
-
-        file_path = self.OUTPUT_PATH_MODEL + os.sep + "chosen_model.sav"  # TODO: change file with classifier name
-        pickle.dump(model, open(file_path, 'wb'))
-        print("Model saved in file- ", file_path)
-        print("Saving model to file ... DONE.")
+        print("Classifier Test ... DONE.")
 
     # controller function to run all tasks
     def run_model(self):
 
         input_path = self.read_path()
         raw_meal_df, raw_nomeal_df = self.read_data(input_path)
-        processed_df = self.process_data(raw_meal_df, raw_nomeal_df)
+        processed_df = self.preprocess_data(raw_meal_df, raw_nomeal_df)
         processed_unlabelled_df = processed_df.drop('meal', 1)
         feature_df = self.extract_features(processed_unlabelled_df)
         reduced_feature_df = self.reduce_dimensions(feature_df)
-        best_model = self.choose_classifier(reduced_feature_df, processed_df.meal)
+        self.train_models(reduced_feature_df, processed_df.meal)
 
-        print("The chosen model(in terms of highest average score)- ", best_model.__class__.__name__)
-        self.save_model(best_model)
         # TODO: add test script
-        # TODO: finalize classifier- CHOOSE
+        # TODO: finalize classifier- CHOOSE 1 each
         # TODO: finalize features
         # TODO: save model
-        # TODO: save eigen values ??
         print("Meal Classification Model ... DONE.")
 
 
