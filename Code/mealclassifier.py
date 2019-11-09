@@ -276,14 +276,14 @@ class MealClassifier:
 
         # Standardizes feature matrix
         feature_df = StandardScaler().fit_transform(feature_df)
-
-        pca = PCA(n_components = 5)
+        pca_k = 9
+        pca = PCA(n_components = pca_k)
         principal_components = pca.fit(feature_df)
         principal_components_trans = pca.fit_transform(feature_df)
-        pca_df = pd.DataFrame(data = principal_components_trans,
-                              columns = ['principal component 1', 'principal component 2',
-                                         'principal component 3',
-                                         'principal component 4', 'principal component 5'])
+        pca_df_cols = []
+        for i in range(pca_k):
+            pca_df_cols.append('principal components ' + str(i + 1))
+        pca_df = pd.DataFrame(data = principal_components_trans, columns = pca_df_cols)
 
         # print(principal_components.components_)  # Principal Components vs Original Features
         # print(principal_components.explained_variance_ratio_.cumsum())
@@ -350,10 +350,9 @@ class MealClassifier:
         reduced_feature_df = self.reduce_dimensions(feature_df)
         self.train_models(reduced_feature_df, processed_df.meal)
 
-        # TODO: add test script
         # TODO: finalize classifier- CHOOSE 1 each
         # TODO: finalize features
-        # TODO: save model
+        # TODO: Current accuracy 60-67
         print("Meal Classification Model ... DONE.")
 
 
