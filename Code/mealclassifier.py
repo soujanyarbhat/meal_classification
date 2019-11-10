@@ -35,6 +35,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import warnings
 
+from tslearn.clustering import TimeSeriesKMeans
+
 warnings.simplefilter(action = 'ignore', category = FutureWarning)
 import pickle
 
@@ -213,10 +215,10 @@ class MealClassifier:
         print("Extracting FFT ... DONE.")
         return new_features.join(FFT_updated)
 
+    # Calculates entropy(from occurences of each value) of given series
     def extract_entropy(self, data_df, new_features):
         print("Extracting Entropy ...")
 
-        # Calculates entropy(from occurences of each value) of given series
         def get_entropy(series):
             series_counts = series.value_counts()
             entropy = scipy.stats.entropy(series_counts)
@@ -230,21 +232,36 @@ class MealClassifier:
         # plt.xlabel('Days')
         # plt.savefig('Entropy.png')
 
-    def poly_fit(self, data_df, new_features):
+    # Calculates polynomial fit coeffs for the data points
+    def extract_polyfit(self, data_df, new_features):
         print("Extracting polynomial fit coeffs ...")
 
-        # Calculates polynomial fit coeffs for the data points
         poly = pd.DataFrame()
         rows, cols = data_df.shape
-        poly['PolyFit'] = data_df.apply(lambda row: np.polyfit(range(cols), row, 5), axis = 1)
+        poly_degree = 5
+        poly['PolyFit'] = data_df.apply(lambda row: np.polyfit(range(cols), row, poly_degree), axis = 1)
         # print(poly.head())
+        poly_df_cols = []
+        for i in range(poly_degree + 1):
+            poly_df_cols.append('poly_fit' + str(i + 1))
         poly_updated = pd.DataFrame(poly.PolyFit.tolist(),
-                                    columns = ['poly_fit1', 'poly_fit2', 'poly_fit3', 'poly_fit4', 'poly_fit5',
-                                               'poly_fit6'])  # , poly_fit7', 'poly_fit8', 'poly_fit9', 'poly_fit10', 'poly_fit11'])
+                                    columns = poly_df_cols)
 
         print("Extracting polynomial fit coeffs ... DONE.")
 
         return new_features.join(poly_updated)
+
+    # Forms 2 clusters in input data and adds it as feature
+    def extract_clusters(self, new_featues):
+        print("Extracting clusters ...")
+
+        km = TimeSeriesKMeans(n_clusters = 2, random_state = 42)
+        km.fit(new_featues)
+        y_label = km.labels_
+        new_featues['km_clusters'] = y_label
+
+        print("Extracting clusters ... DONE.")
+        return new_featues
 
     # Extracts 4 features from time series data
     # 1. Maximum window velocity
@@ -264,7 +281,9 @@ class MealClassifier:
         # FEATURE 4 -> Calculates entropy(from occurrences of each value) of given series
         self.extract_entropy(data_df, feature_df)
         # FEATURE 5 -> Calculates polynomial fit coefficients of given series
-        feature_df = self.poly_fit(data_df, feature_df)
+        feature_df = self.extract_polyfit(data_df, feature_df)
+        # FEATURE 6 -> Clustering(n = 2)
+        feature_df = self.extract_clusters(feature_df)
 
         # print("Feature size - ", feature_df.shape)
         # print("Features - \n", feature_df.head())
@@ -278,7 +297,6 @@ class MealClassifier:
         feature_df = StandardScaler().fit_transform(feature_df)
         pca_k = 9
         pca = PCA(n_components = pca_k)
-        principal_components = pca.fit(feature_df)
         principal_components_trans = pca.fit_transform(feature_df)
         pca_df_cols = []
         for i in range(pca_k):
