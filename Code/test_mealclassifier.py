@@ -34,10 +34,10 @@ class TestMealClassifier():
 
     OUTPUT_PATH_DIR = os.path.join(os.path.dirname(__file__), '..', 'Output')
     OUTPUT_FILE_NAMES = {
-        'model_varun.sav': 'predictions_varun.csv',
-        'model_soujanya.sav': 'predictions_soujanya.csv',
-        'model_aryan.sav': 'predictions_aryan.csv',
-        'model_gourav.sav': 'predictions_gourav.csv'
+        'LogisticRegression_varun.sav': 'predictions_varun.csv',
+        'GaussianNB_soujanya.sav': 'predictions_soujanya.csv',
+        'SVC_aryan.sav': 'predictions_aryan.csv',
+        'RandomForestClassifier_gourav.sav': 'predictions_gourav.csv'
     }
 
     def __init__(self):

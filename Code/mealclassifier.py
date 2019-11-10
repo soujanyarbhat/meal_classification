@@ -46,10 +46,10 @@ class MealClassifier:
     OUTPUT_PATH_PLOTS = os.path.join(os.path.dirname(__file__), '..', 'Plots')
     OUTPUT_PATH_MODEL = os.path.join(os.path.dirname(__file__), '..', 'Model')
     OUTPUT_MODEL_FILENAMES = {
-        "LogisticRegression": 'model_varun.sav',
-        "GaussianNB": 'model_soujanya.sav',
-        "SVC": 'model_aryan.sav',
-        "RandomForestClassifier": 'model_gourav.sav'
+        "LogisticRegression": 'LogisticRegression_varun.sav',
+        "GaussianNB": 'GaussianNB_soujanya.sav',
+        "SVC": 'SVC_aryan.sav',
+        "RandomForestClassifier": 'RandomForestClassifier_gourav.sav'
     }
 
     def __init__(self):
