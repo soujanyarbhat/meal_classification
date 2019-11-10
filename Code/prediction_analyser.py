@@ -13,13 +13,13 @@ truth_path = os.path.join(current_dir, '..', 'Test', 'GroundTruth.csv')
 input_files = [f for f in listdir(input_path) if isfile(join(input_path, f))]
 # ground truth DF
 ground_truth_df = pd.read_csv(truth_path, header = None)
-print('GROUND TRUTH ------------------------------\n', ground_truth_df)
+# print('GROUND TRUTH ------------------------------\n', ground_truth_df)
 # Accuracy
 for input_file in input_files:
     predictions_df = pd.read_csv(os.path.join(input_path, input_file), header = None)
     accuracy_df = ground_truth_df.where(ground_truth_df.values == predictions_df.values).notna()
-    print('PREDICTIONS ------------------------------\n', predictions_df)
-    print('ACCURACY ------------------------------\n', accuracy_df)
+    # print('PREDICTIONS ------------------------------\n', predictions_df)
+    # print('ACCURACY ------------------------------\n', accuracy_df)
     hits = accuracy_df.sum()
     rows, cols = ground_truth_df.shape
     misses = rows - hits

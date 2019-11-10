@@ -43,6 +43,21 @@ class TestMealClassifier():
     def __init__(self):
         print("Testing Meal Classifier ...")
 
+    # Takes path of test file as input from user (uses pre-configured path if the input is blank)
+    def read_path(self):
+        print("Reading test file path ... ")
+
+        current_dir = os.path.dirname(__file__)
+        file_path = os.path.join(current_dir, '..', 'Test', 'Test.csv')
+        pre_configured_path = os.path.abspath(file_path)
+        temp_file_path = input('Please enter the test file path\n'
+                                     'OR\nHit enter to use %s: ' % pre_configured_path)
+        if temp_file_path.strip() != '':
+            file_path = temp_file_path.strip()
+
+        print("Reading test file path ... DONE.")
+        return file_path
+
     # Converts test data to reduced feature matrix after pre-processing
     def process_data(self, file_path, meal_classifier):
         print('Processing test data ...')
@@ -84,7 +99,7 @@ class TestMealClassifier():
     def test_model(self):
 
         meal_classifier = MealClassifier()
-        file_path = input('Please enter the data set directory path:\n')
+        file_path = self.read_path()
         reduced_feature_df = self.process_data(file_path, meal_classifier)
         self.predict_save(reduced_feature_df, meal_classifier)
 
