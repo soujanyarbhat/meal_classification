@@ -10,6 +10,7 @@ FEATURES:
 3. Fast fourier transform
 4. Entropy
 5. Polynomial fit
+6. Clustering
 
 PROJECT STRUCTURE:
 1. Code - contains the classifier script and the testing script.

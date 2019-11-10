@@ -268,6 +268,8 @@ class MealClassifier:
     # 2. Windowed mean
     # 3. Entropy
     # 4. FFT
+    # 5. Polynomial fit
+    # 6. K-means clustering
     def extract_features(self, data_df):
 
         # Feature Matrix
@@ -323,9 +325,9 @@ class MealClassifier:
 
     # Test classifiers and returns the highest accuracy scorer
     # 1. Logistic regression
-    # 2. K-nearest
+    # 2. Random Forest
     # 3. Support vector
-    # 4. Decision tree
+    # 4. Naive Bayes
     def train_models(self, X, y):
         print("Classifier Test ...")
 
@@ -388,5 +390,5 @@ if __name__ == '__main__':
 # b) DONE - Make sure that the features are discriminatory
 # c) DONE - Each student trains a separate machine to recognize Meal or No Meal data
 # d) DONE - Use k fold cross validation on the training data to evaluate your recognition system
-# e) Each student write a function that takes one test sample as input
+# e) DONE - Each student write a function that takes one test sample as input
 # and outputs 1 if it predicts the test sample as meal or 0 if it predicts test sample as No meal.
