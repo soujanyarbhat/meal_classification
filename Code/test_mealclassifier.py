@@ -67,6 +67,7 @@ class TestMealClassifier():
                      "Col11", "Col12", "Col13", "Col14", "Col15", "Col16", "Col17", "Col18", "Col19", "Col20",
                      "Col21", "Col22", "Col23", "Col24", "Col25", "Col26", "Col27", "Col28", "Col29", "Col30", "Col31"]
         test_data_df = pd.read_csv(file_path, names = col_names)
+        # mimic training data pre-processing(NaN handling)
         del test_data_df['Col31']
         test_data_df = test_data_df.iloc[:, ::-1].astype(int)
         feature_df = meal_classifier.extract_features(test_data_df)
