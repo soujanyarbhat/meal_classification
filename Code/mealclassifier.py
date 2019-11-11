@@ -60,7 +60,7 @@ class MealClassifier:
         print("Reading input directory ... ")
 
         current_dir = os.path.dirname(__file__)
-        folder_path = os.path.join(current_dir, '..', 'Input')
+        folder_path = os.path.join(current_dir, '..', 'Input_Test')
         pre_configured_path = os.path.abspath(folder_path)
         temp_data_set_folder = input('Please enter the data set directory path\n'
                                      'OR\nHit enter to use %s: ' % pre_configured_path)
@@ -198,39 +198,39 @@ class MealClassifier:
         # ax.legend(('Mean_0', 'Mean_6', 'Mean_12', 'Mean_18', 'Mean_24', 'Mean_30'), loc='upper right')
         # fig.savefig('WindowedMean.png')
 
-    # FFT- Finding top 8 values for each row
-    def extract_fft(self, data_df, new_features):
-        print("Extracting FFT ...")
+    # # FFT- Finding top 8 values for each row
+    # def extract_fft(self, data_df, new_features):
+    #     print("Extracting FFT ...")
+    #
+    #     def get_fft(row):
+    #         cgmFFTValues = abs(scipy.fftpack.fft(row))
+    #         cgmFFTValues.sort()
+    #         return np.flip(cgmFFTValues)[0:8]
+    #
+    #     FFT = pd.DataFrame()
+    #     FFT['FFT_Top2'] = data_df.apply(lambda row: get_fft(row), axis = 1)
+    #     FFT_updated = pd.DataFrame(FFT.FFT_Top2.tolist(),
+    #                                columns = ['FFT_1', 'FFT_2', 'FFT_3', 'FFT_4', 'FFT_5', 'FFT_6', 'FFT_7', 'FFT_8'])
+    #
+    #     print("Extracting FFT ... DONE.")
+    #     return new_features.join(FFT_updated)
 
-        def get_fft(row):
-            cgmFFTValues = abs(scipy.fftpack.fft(row))
-            cgmFFTValues.sort()
-            return np.flip(cgmFFTValues)[0:8]
-
-        FFT = pd.DataFrame()
-        FFT['FFT_Top2'] = data_df.apply(lambda row: get_fft(row), axis = 1)
-        FFT_updated = pd.DataFrame(FFT.FFT_Top2.tolist(),
-                                   columns = ['FFT_1', 'FFT_2', 'FFT_3', 'FFT_4', 'FFT_5', 'FFT_6', 'FFT_7', 'FFT_8'])
-
-        print("Extracting FFT ... DONE.")
-        return new_features.join(FFT_updated)
-
-    # Calculates entropy(from occurences of each value) of given series
-    def extract_entropy(self, data_df, new_features):
-        print("Extracting Entropy ...")
-
-        def get_entropy(series):
-            series_counts = series.value_counts()
-            entropy = scipy.stats.entropy(series_counts)
-            return entropy
-
-        new_features['Entropy'] = data_df.apply(lambda row: get_entropy(row), axis = 1)
-        print("Extracting Entropy ... DONE.")
-        # Plotting
-        # plt.plot(new_features['Entropy'], 'r-')
-        # plt.ylabel('Entropy')
-        # plt.xlabel('Days')
-        # plt.savefig('Entropy.png')
+    # # Calculates entropy(from occurences of each value) of given series
+    # def extract_entropy(self, data_df, new_features):
+    #     print("Extracting Entropy ...")
+    #
+    #     def get_entropy(series):
+    #         series_counts = series.value_counts()
+    #         entropy = scipy.stats.entropy(series_counts)
+    #         return entropy
+    #
+    #     new_features['Entropy'] = data_df.apply(lambda row: get_entropy(row), axis = 1)
+    #     print("Extracting Entropy ... DONE.")
+    #     # Plotting
+    #     # plt.plot(new_features['Entropy'], 'r-')
+    #     # plt.ylabel('Entropy')
+    #     # plt.xlabel('Days')
+    #     # plt.savefig('Entropy.png')
 
     # Calculates polynomial fit coeffs for the data points
     def extract_polyfit(self, data_df, new_features):
@@ -263,13 +263,33 @@ class MealClassifier:
         print("Extracting clusters ... DONE.")
         return new_featues
 
+    # # uses noise as feature(noise = 1, no noise = 0)
+    # def extract_noise(self, data_df, new_features):
+    #     dip_window = 6
+    #     raise_window = 20
+    #     max_cgm = 250
+    #     min_cgm = 150
+    #     new_features['noise'] = 1
+    #     noises = data_df[data_df.iloc[:, dip_window] > max_cgm].index
+    #     # Marks the noise as no-meal
+    #     new_features.loc[noises, 'noise'] = 0
+    #     noises = data_df[data_df.iloc[:, raise_window] < min_cgm].index
+    #     new_features.loc[noises, 'noise'] = 0
+
+    # Finds max - min for each time-series instance
+    def extract_max_min(self, data_df, new_featues):
+        print("Extracting max - min ...")
+
+        new_featues['max_min'] = data_df.apply(lambda row: max(row) - row[0], axis = 1)
+
+        print("Extracting max - min ... DONE.")
+        return new_featues
+
     # Extracts 4 features from time series data
     # 1. Maximum window velocity
     # 2. Windowed mean
-    # 3. Entropy
-    # 4. FFT
-    # 5. Polynomial fit
-    # 6. K-means clustering
+    # 3. Polynomial fit
+    # 4. K-means clustering
     def extract_features(self, data_df):
 
         # Feature Matrix
@@ -279,13 +299,17 @@ class MealClassifier:
         # FEATURE 2 -> Windowed mean interval - 30 mins(non-overlapping)
         self.extract_mean(data_df, feature_df)
         # FEATURE 3 -> FFT- Finding top 8 values for each row
-        feature_df = self.extract_fft(data_df, feature_df)
+        # feature_df = self.extract_fft(data_df, feature_df)
         # FEATURE 4 -> Calculates entropy(from occurrences of each value) of given series
-        self.extract_entropy(data_df, feature_df)
+        # self.extract_entropy(data_df, feature_df)
         # FEATURE 5 -> Calculates polynomial fit coefficients of given series
         feature_df = self.extract_polyfit(data_df, feature_df)
         # FEATURE 6 -> Clustering(n = 2)
-        # feature_df = self.extract_clusters(feature_df)
+        feature_df = self.extract_clusters(feature_df)
+        # FEATURE 7 -> Calculate if noise present
+        # self.extract_noise(data_df, feature_df)
+        # FEATURE 8 -> Calculates max - first value
+        feature_df = self.extract_max_min(data_df, feature_df)
 
         # print("Feature size - ", feature_df.shape)
         # print("Features - \n", feature_df.head())
@@ -306,7 +330,7 @@ class MealClassifier:
         pca_df = pd.DataFrame(data = principal_components_trans, columns = pca_df_cols)
 
         # print(principal_components.components_)  # Principal Components vs Original Features
-        # print(principal_components.explained_variance_ratio_.cumsum())
+        print(pca.explained_variance_ratio_.cumsum())
         # print("PCA dataframe - \n", pca_df.head())
         print("Dimensionality reduction ... DONE.")
         return pca_df
@@ -339,22 +363,21 @@ class MealClassifier:
             "RandomForestClassifier": RandomForestClassifier(),
             "NaiveBayesClassifier": GaussianNB()
         }
-        # best classifier object and corresponding maximum mean accuracy
-        max_score = float("-inf")
         cv = KFold(n_splits = 5)
         for key, classifier in classifiers.items():
-            scores = []
-            for train_index, test_index in cv.split(X):
-                X_train, X_test, y_train, y_test = X.iloc[train_index], X.iloc[test_index], \
-                                                   y.iloc[train_index], y.iloc[test_index]
-                classifier.fit(X_train, y_train)
-                training_score = cross_val_score(classifier, X_test, y_test, cv = 5)
-                scores.append(round(training_score.mean(), 2) * 100)
-                # print("Classifiers: ", classifier.__class__.__name__, "Has a training score of",
-                #       round(training_score.mean(), 2) * 100, "% accuracy score")
-
-            mean_score = sum(scores) / len(scores)
-            print("{} -> {}".format(classifier.__class__.__name__, mean_score))
+            # scores = []
+            # for train_index, test_index in cv.split(X):
+            #     X_train, X_test, y_train, y_test = X.iloc[train_index], X.iloc[test_index], \
+            #                                        y.iloc[train_index], y.iloc[test_index]
+            #     classifier.fit(X_train, y_train)
+            #     training_score = cross_val_score(classifier, X_test, y_test, cv = 5)
+            #     scores.append(round(training_score.mean(), 2) * 100)
+            #     # print("Classifiers: ", classifier.__class__.__name__, "Has a training score of",
+            #     #       round(training_score.mean(), 2) * 100, "% accuracy score")
+            #
+            # mean_score = sum(scores) / len(scores)
+            # print("{} -> {}".format(classifier.__class__.__name__, mean_score))
+            classifier.fit(X, y)
             self.save_model(classifier)
 
         print("Classifier Test ... DONE.")
@@ -367,8 +390,8 @@ class MealClassifier:
         processed_df = self.preprocess_data(raw_meal_df, raw_nomeal_df)
         processed_unlabelled_df = processed_df.drop('meal', 1)
         feature_df = self.extract_features(processed_unlabelled_df)
-        reduced_feature_df = self.reduce_dimensions(feature_df)
-        self.train_models(reduced_feature_df, processed_df.meal)
+        # reduced_feature_df = self.reduce_dimensions(feature_df)
+        self.train_models(feature_df, processed_df.meal)
 
         # TODO: finalize classifier- CHOOSE 1 each
         # TODO: finalize features
