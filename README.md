@@ -15,9 +15,8 @@ FEATURES:
 PROJECT STRUCTURE:
 1. Code - contains the classifier script and the testing script.
 2. Input - contains the given data set for training model.
-3. Output - contains the predictions of chosen models.
-4. Plots - contains sample plots of given data.
-5. Test - contains a sample test file.
+3. Model - cobntains the saved classifiers of each member.
+4. Output - contains the predictions of chosen models.
 
 EXECUTION INSTRUCTIONS:
 
