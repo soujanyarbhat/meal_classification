@@ -60,7 +60,7 @@ class MealClassifier:
         print("Reading input directory ... ")
 
         current_dir = os.path.dirname(__file__)
-        folder_path = os.path.join(current_dir, '..', 'Input_Test')
+        folder_path = os.path.join(current_dir, '..', 'Input')
         pre_configured_path = os.path.abspath(folder_path)
         temp_data_set_folder = input('Please enter the data set directory path\n'
                                      'OR\nHit enter to use %s: ' % pre_configured_path)
@@ -277,13 +277,13 @@ class MealClassifier:
     #     new_features.loc[noises, 'noise'] = 0
 
     # Finds max - min for each time-series instance
-    def extract_max_min(self, data_df, new_featues):
-        print("Extracting max - min ...")
-
-        new_featues['max_min'] = data_df.apply(lambda row: max(row) - row[0], axis = 1)
-
-        print("Extracting max - min ... DONE.")
-        return new_featues
+    # def extract_max_min(self, data_df, new_featues):
+    #     print("Extracting max - min ...")
+    #
+    #     new_featues['max_min'] = data_df.apply(lambda row: max(row) - row[0], axis = 1)
+    #
+    #     print("Extracting max - min ... DONE.")
+    #     return new_featues
 
     # Extracts 4 features from time series data
     # 1. Maximum window velocity
@@ -309,7 +309,7 @@ class MealClassifier:
         # FEATURE 7 -> Calculate if noise present
         # self.extract_noise(data_df, feature_df)
         # FEATURE 8 -> Calculates max - first value
-        feature_df = self.extract_max_min(data_df, feature_df)
+        # feature_df = self.extract_max_min(data_df, feature_df)
 
         # print("Feature size - ", feature_df.shape)
         # print("Features - \n", feature_df.head())
@@ -390,8 +390,8 @@ class MealClassifier:
         processed_df = self.preprocess_data(raw_meal_df, raw_nomeal_df)
         processed_unlabelled_df = processed_df.drop('meal', 1)
         feature_df = self.extract_features(processed_unlabelled_df)
-        # reduced_feature_df = self.reduce_dimensions(feature_df)
-        self.train_models(feature_df, processed_df.meal)
+        reduced_feature_df = self.reduce_dimensions(feature_df)
+        self.train_models(reduced_feature_df, processed_df.meal)
 
         # TODO: finalize classifier- CHOOSE 1 each
         # TODO: finalize features

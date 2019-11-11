@@ -74,7 +74,7 @@ class TestMealClassifier():
         reduced_feature_df = meal_classifier.reduce_dimensions(feature_df)
 
         print('Processing test data ... DONE.')
-        return feature_df
+        return reduced_feature_df
 
     # Tests all models and saves predictions in file
     def predict_save(self, reduced_feature_df, meal_classifier):
