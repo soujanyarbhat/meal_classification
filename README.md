@@ -24,7 +24,7 @@ EXECUTION INSTRUCTIONS:
 python mealclassifier.py<br>
 Input- path to training data set directory(or ENTER for default "Input/" dir)<br>
 Output- classifiers in "Model/" directory(as pickle files).
-Filename format- "model_<member name\>.sav"
+Filename format- "<classifier name \>_<member name\>.sav"
 
 2. Test script<br>
 python test_mealclassifier.py<br>
