@@ -47,7 +47,7 @@ class MealClassifier:
     OUTPUT_PATH_MODEL = os.path.join(os.path.dirname(__file__), '..', 'Model')
     OUTPUT_MODEL_FILENAMES = {
         "LogisticRegression": 'LogisticRegression_varun.sav',
-        # "GaussianNB": 'GaussianNB_soujanya.sav',
+        "GaussianNB": 'GaussianNB_soujanya.sav',
         "SVC": 'SVC_aryan.sav',
         "RandomForestClassifier": 'RandomForestClassifier_gourav.sav'
     }
@@ -337,7 +337,7 @@ class MealClassifier:
             "SupportVectorClassifier": SVC(),
             # "DecisionTreeClassifier": DecisionTreeClassifier(),
             "RandomForestClassifier": RandomForestClassifier(),
-            # "NaiveBayesClassifier": GaussianNB()
+            "NaiveBayesClassifier": GaussianNB()
         }
         # best classifier object and corresponding maximum mean accuracy
         max_score = float("-inf")
