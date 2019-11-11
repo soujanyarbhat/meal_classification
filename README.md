@@ -10,13 +10,12 @@ FEATURES:
 3. Fast fourier transform
 4. Entropy
 5. Polynomial fit
-6. Clustering
 
 PROJECT STRUCTURE:
 1. Code - contains the classifier script and the testing script.
 2. Input - contains the given data set for training model.
-3. Model - cobntains the saved classifiers of each member.
-4. Output - contains the predictions of chosen models.
+3. Model - contains the saved classifiers of each member.
+4. Output - Will contain the predictions of chosen models.
 
 EXECUTION INSTRUCTIONS:
 
