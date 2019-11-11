@@ -47,7 +47,7 @@ class MealClassifier:
     OUTPUT_PATH_MODEL = os.path.join(os.path.dirname(__file__), '..', 'Model')
     OUTPUT_MODEL_FILENAMES = {
         "LogisticRegression": 'LogisticRegression_varun.sav',
-        "GaussianNB": 'GaussianNB_soujanya.sav',
+        # "GaussianNB": 'GaussianNB_soujanya.sav',
         "SVC": 'SVC_aryan.sav',
         "RandomForestClassifier": 'RandomForestClassifier_gourav.sav'
     }
@@ -137,12 +137,12 @@ class MealClassifier:
         processed_meal_df = raw_meal_df.iloc[:, ::-1].dropna(how = 'all')
 
         # print("Meal data Processed-\n", processed_meal_df.head())
-        self.plot_cgm(processed_meal_df, 5)
+        # self.plot_cgm(processed_meal_df, 5)
 
         processed_nomeal_df = raw_nomeal_df.iloc[:, ::-1].dropna(how = 'all')
 
         # print("No Meal data Processed-\n", processed_nomeal_df.head())
-        self.plot_cgm(processed_nomeal_df, 5, filename = "NoMeal", color = "r")
+        # self.plot_cgm(processed_nomeal_df, 5, filename = "NoMeal", color = "r")
 
         processed_meal_df.loc[:, 'meal'] = 1
         # Considering CGM levels above 250 at 6th window as noise. Remove them/mark them as no-meal
@@ -285,7 +285,7 @@ class MealClassifier:
         # FEATURE 5 -> Calculates polynomial fit coefficients of given series
         feature_df = self.extract_polyfit(data_df, feature_df)
         # FEATURE 6 -> Clustering(n = 2)
-        feature_df = self.extract_clusters(feature_df)
+        # feature_df = self.extract_clusters(feature_df)
 
         # print("Feature size - ", feature_df.shape)
         # print("Features - \n", feature_df.head())
@@ -337,7 +337,7 @@ class MealClassifier:
             "SupportVectorClassifier": SVC(),
             # "DecisionTreeClassifier": DecisionTreeClassifier(),
             "RandomForestClassifier": RandomForestClassifier(),
-            "NaiveBayesClassifier": GaussianNB()
+            # "NaiveBayesClassifier": GaussianNB()
         }
         # best classifier object and corresponding maximum mean accuracy
         max_score = float("-inf")
