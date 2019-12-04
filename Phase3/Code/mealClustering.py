@@ -82,12 +82,13 @@ class MealClustering:
 
         return raw_meal_df, raw_carb_df
 
-    def preprocess_data(self, raw_meal_df):
+    def preprocess_data(self, raw_meal_df, raw_carb_data):
         """
         Reverses columns
         Removes rows- all NaN or high NaN count
         Interpolates NaN values
         :param raw_meal_df:
+        :param raw_carb_data:
         :return: processed meal data frame
         """
         print("Pre-processing ...")
@@ -95,12 +96,13 @@ class MealClustering:
         # TODO: Handle NaN - CURRENT: delete col 31. NOTE = no NaN in TEST DATA
 
         del raw_meal_df['Col31']
-
-        processed_meal_df = raw_meal_df.iloc[:, ::-1].dropna(how = 'all')
+        raw_meal_df['carbs'] = raw_carb_data[0]
+        processed_meal_df = raw_meal_df.iloc[:, ::-1].dropna(how = 'all', thresh=2)
+        processed_carb_data = pd.DataFrame(processed_meal_df.carbs)
+        processed_meal_df = processed_meal_df.drop('carbs', 1)
         processed_meal_df.interpolate(method='linear', inplace=True)
         print("Pre-processing ... DONE.")
-
-        return processed_meal_df
+        return processed_meal_df, processed_carb_data
 
     def extract_velocity(self, data_df, new_features):
         """
@@ -285,6 +287,7 @@ class MealClustering:
         sil_score = silhouette_score(data, y_label)
         print(f"Silhouette score : {sil_score}")
         print("Extracting clusters ... DONE.")
+        return y_label
 
     # PCA
     def reduce_dimensions(self, feature_df):
@@ -306,8 +309,9 @@ class MealClustering:
         print("Dimensionality reduction ... DONE.")
         return pca_df
 
-    # def cluster_validation(self, feature_df):
-    #     metrics.adjusted_mutual_info_score(labels_true, labels_pred)
+    def cluster_validation(self, labels_pred, labels_true):
+        cluster_score = metrics.adjusted_mutual_info_score(labels_true, labels_pred)
+        print(f"CLUSTER SCORE:{cluster_score}")
 
     def run_model(self):
         """
@@ -316,13 +320,13 @@ class MealClustering:
         """
         input_path = self.read_path()
         raw_meal_df, raw_carb_df = self.read_data(input_path)
-        processed_df = self.preprocess_data(raw_meal_df)
+        processed_df, processed_carb_df = self.preprocess_data(raw_meal_df, raw_carb_df)
         feature_df = self.extract_features(processed_df)
         h_clusters_df = self.h_clustering(feature_df)
-        self.km_clustering(h_clusters_df)
-        self.km_clustering(raw_carb_df)
-        # self.cluster_validation(feature_df)
-        #reduced_feature_df = self.reduce_dimensions(feature_df)
+        feature_labels = self.km_clustering(h_clusters_df)
+        # TODO: get cluster labels of carb_labels using processed_carb_df
+        # TODO: self.cluster_validation(feature_labels, carb_labels)
+
 
 
 
