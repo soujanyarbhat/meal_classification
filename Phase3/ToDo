@@ -1,4 +1,8 @@
 To Do
-1. Group carbs into 10
-2. label them accordingly
-3. cluster the data and compare with known carb labels
+0. Done: (Put FFT for now) Remove KMeans-Clusters as Feature: since no No-Meal data
+1. Done: Group carbs into 10
+2. Done: label them accordingly
+3. Done: Cluster Feature Data
+4. Modify Feature Labels according to carb labels?
+5. Test Script?
+6. DBScan Implementation..

@@ -6,6 +6,10 @@ import pandas as pd
 from pandas import read_csv
 from pandas import concat
 from pandas import DataFrame
+from collections import defaultdict
+from collections import Counter
+from functools import partial
+from scipy import fftpack
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
@@ -130,24 +134,24 @@ class MealClustering:
 
         print("Extracting Mean ... DONE.")
 
-    # def extract_fft(self, data_df, new_features):
-    # """
-    # FFT- Finding top 8 values for each row
-    # """
-    #     print("Extracting FFT ...")
-    #
-    #     def get_fft(row):
-    #         cgmFFTValues = abs(scipy.fftpack.fft(row))
-    #         cgmFFTValues.sort()
-    #         return np.flip(cgmFFTValues)[0:8]
-    #
-    #     FFT = pd.DataFrame()
-    #     FFT['FFT_Top2'] = data_df.apply(lambda row: get_fft(row), axis = 1)
-    #     FFT_updated = pd.DataFrame(FFT.FFT_Top2.tolist(),
-    #                                columns = ['FFT_1', 'FFT_2', 'FFT_3', 'FFT_4', 'FFT_5', 'FFT_6', 'FFT_7', 'FFT_8'])
-    #
-    #     print("Extracting FFT ... DONE.")
-    #     return new_features.join(FFT_updated)
+    def extract_fft(self, data_df, new_features):
+        """
+        FFT- Finding top 8 values for each row
+        """
+        print("Extracting FFT ...")
+
+        def get_fft(row):
+            cgmFFTValues = abs(fftpack.fft(row))
+            cgmFFTValues.sort()
+            return np.flip(cgmFFTValues)[0:8]
+
+        FFT = pd.DataFrame()
+        FFT['FFT_Top2'] = data_df.apply(lambda row: get_fft(row), axis = 1)
+        FFT_updated = pd.DataFrame(FFT.FFT_Top2.tolist(),
+                                   columns = ['FFT_1', 'FFT_2', 'FFT_3', 'FFT_4', 'FFT_5', 'FFT_6', 'FFT_7', 'FFT_8'])
+
+        print("Extracting FFT ... DONE.")
+        return new_features.join(FFT_updated)
 
     # def extract_entropy(self, data_df, new_features):
     # """
@@ -189,18 +193,18 @@ class MealClustering:
 
         return new_features.join(poly_updated)
 
-    def extract_clusters(self, new_features):
-        """
-        Forms 2 clusters in input data and adds it as feature
-        """
-        print("Extracting clusters ...")
-
-        km = TimeSeriesKMeans(n_clusters=2, random_state=42)
-        km.fit(new_features)
-        y_label = km.labels_
-        new_features['km_clusters'] = y_label
-
-        print("Extracting clusters ... DONE.")
+    # def extract_clusters(self, new_features):
+    #     """
+    #     Forms 2 clusters in input data and adds it as feature
+    #     """
+    #     print("Extracting clusters ...")
+    #
+    #     km = TimeSeriesKMeans(n_clusters=2, random_state=42)
+    #     km.fit(new_features)
+    #     y_label = km.labels_
+    #     new_features['km_clusters'] = y_label
+    #
+    #     print("Extracting clusters ... DONE.")
 
     # def extract_noise(self, data_df, new_features):
     # """
@@ -246,13 +250,13 @@ class MealClustering:
         # FEATURE 2 -> Windowed mean interval - 30 mins(non-overlapping)
         self.extract_mean(data_df, feature_df)
         # FEATURE 3 -> FFT- Finding top 8 values for each row
-        # feature_df = self.extract_fft(data_df, feature_df)
+        feature_df = self.extract_fft(data_df, feature_df)
         # FEATURE 4 -> Calculates entropy(from occurrences of each value) of given series
         # self.extract_entropy(data_df, feature_df)
         # FEATURE 5 -> Calculates polynomial fit coefficients of given series
         feature_df = self.extract_polyfit(data_df, feature_df)
         # FEATURE 6 -> KMeans Clustering(n = 2)
-        self.extract_clusters(feature_df)
+        # self.extract_clusters(feature_df)
         # FEATURE 7 -> Calculate if noise present
         # self.extract_noise(data_df, feature_df)
         # FEATURE 8 -> Calculates max - first value
@@ -309,6 +313,45 @@ class MealClustering:
         print("Dimensionality reduction ... DONE.")
         return pca_df
 
+    def carbs_cluster(self, data):
+        # print(data)
+        max_val = data.max()
+        min_val = data.min()
+        range_val = (max_val - min_val) / 10
+        cluster_range = []
+        k = 0
+        temp_range = range_val[0]
+        for i in range(0, 10):
+            if i == 0:
+                cluster_range.append((k, temp_range))
+            else:
+                cluster_range.append((k + 1, temp_range))
+            k = k + range_val[0]
+            temp_range += range_val[0]
+        carbs_cluster = []
+        for index, row in data.iterrows():
+            for i in range(len(cluster_range)):
+                low, high = cluster_range[i]
+                if low <= row[0] <= high:
+                    carbs_cluster.append(i)
+        data[1] = carbs_cluster
+        # print(data)
+        return carbs_cluster
+
+    def map_feature_labels(self, feature_label, carbs_label):
+        carb_to_feature = defaultdict(partial(np.array, 0))
+        for i in range(0, len(carbs_label)):
+            carb_to_feature[carbs_label[i]] = np.append(carb_to_feature[carbs_label[i]], feature_label[i])
+        final_data = defaultdict()
+        for key in carb_to_feature:
+            counts = Counter(carb_to_feature[key])
+            final_data[key] = counts.most_common(1)[0][0]
+        print(final_data)
+        # TODO: Problem here.. since some clusters are not even there in the final mapped data
+        for i in range(len(feature_label)):
+            feature_label[i] = list(final_data.keys())[list(final_data.values()).index(feature_label[i])]
+        return feature_label
+
     def cluster_validation(self, labels_pred, labels_true):
         cluster_score = metrics.adjusted_mutual_info_score(labels_true, labels_pred)
         print(f"CLUSTER SCORE:{cluster_score}")
@@ -322,10 +365,14 @@ class MealClustering:
         raw_meal_df, raw_carb_df = self.read_data(input_path)
         processed_df, processed_carb_df = self.preprocess_data(raw_meal_df, raw_carb_df)
         feature_df = self.extract_features(processed_df)
-        h_clusters_df = self.h_clustering(feature_df)
+        reduced_feature_df = self.reduce_dimensions(feature_df)
+        h_clusters_df = self.h_clustering(reduced_feature_df)
         feature_labels = self.km_clustering(h_clusters_df)
-        # TODO: get cluster labels of carb_labels using processed_carb_df
-        # TODO: self.cluster_validation(feature_labels, carb_labels)
+        carb_labels = self.carbs_cluster(processed_carb_df)
+        feature_labels = self.map_feature_labels(feature_labels, carb_labels)
+        print(feature_labels, carb_labels)
+        self.cluster_validation(feature_labels, carb_labels)
+
 
 
 
