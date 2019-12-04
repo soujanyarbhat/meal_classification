@@ -9,6 +9,7 @@ from pandas import DataFrame
 from collections import defaultdict
 from collections import Counter
 from functools import partial
+from scipy import stats
 from scipy import fftpack
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -354,6 +355,7 @@ class MealClustering:
 
     def cluster_validation(self, labels_pred, labels_true):
         cluster_score = metrics.adjusted_mutual_info_score(labels_true, labels_pred)
+        # cluster_score = stats.entropy(labels_pred, labels_true)
         print(f"CLUSTER SCORE:{cluster_score}")
 
     def run_model(self):
@@ -370,7 +372,7 @@ class MealClustering:
         feature_labels = self.km_clustering(h_clusters_df)
         carb_labels = self.carbs_cluster(processed_carb_df)
         feature_labels = self.map_feature_labels(feature_labels, carb_labels)
-        print(feature_labels, carb_labels)
+        print(f"Feature Labels: {feature_labels}\n Carb Labels:{carb_labels}")
         self.cluster_validation(feature_labels, carb_labels)
 
 
