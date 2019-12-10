@@ -3,6 +3,7 @@ import os
 from os import listdir
 from os.path import isfile, join
 import pandas as pd
+import sklearn
 from pandas import read_csv
 from pandas import concat
 from pandas import DataFrame
@@ -106,6 +107,7 @@ class MealClustering:
         processed_carb_data = pd.DataFrame(processed_meal_df.carbs)
         processed_meal_df = processed_meal_df.drop('carbs', 1)
         processed_meal_df.interpolate(method='linear', inplace=True)
+        print('Processed data size - ', processed_meal_df.shape)
         print("Pre-processing ... DONE.")
         return processed_meal_df, processed_carb_data
 
@@ -183,7 +185,6 @@ class MealClustering:
         rows, cols = data_df.shape
         poly_degree = 5
         poly['PolyFit'] = data_df.apply(lambda row: np.polyfit(range(cols), row, poly_degree), axis = 1)
-        # print(poly.head())
         poly_df_cols = []
         for i in range(poly_degree + 1):
             poly_df_cols.append('poly_fit' + str(i + 1))
@@ -191,7 +192,8 @@ class MealClustering:
                                     columns = poly_df_cols)
 
         print("Extracting polynomial fit coeffs ... DONE.")
-
+        if new_features.empty:
+            return poly_updated
         return new_features.join(poly_updated)
 
     # def extract_clusters(self, new_features):
@@ -251,11 +253,11 @@ class MealClustering:
         # FEATURE 2 -> Windowed mean interval - 30 mins(non-overlapping)
         self.extract_mean(data_df, feature_df)
         # FEATURE 3 -> FFT- Finding top 8 values for each row
-        feature_df = self.extract_fft(data_df, feature_df)
+        #feature_df = self.extract_fft(data_df, feature_df)
         # FEATURE 4 -> Calculates entropy(from occurrences of each value) of given series
         # self.extract_entropy(data_df, feature_df)
         # FEATURE 5 -> Calculates polynomial fit coefficients of given series
-        feature_df = self.extract_polyfit(data_df, feature_df)
+        # feature_df = self.extract_polyfit(data_df, feature_df)
         # FEATURE 6 -> KMeans Clustering(n = 2)
         # self.extract_clusters(feature_df)
         # FEATURE 7 -> Calculate if noise present
@@ -263,6 +265,11 @@ class MealClustering:
         # FEATURE 8 -> Calculates max - first value
         # feature_df = self.extract_max_min(data_df, feature_df)
 
+        #feature_df['std'] = data_df.std(axis=1)
+        #feature_df['skew'] = data_df.skew(axis=1)
+        #feature_df['Max'] = data_df.max(axis=1)
+        #feature_df['Min'] = data_df.min(axis=1)
+        #feature_df['Var'] = data_df.var(axis=1)
         # print("Feature size - ", feature_df.shape)
         feature_df.to_csv("output.csv")
         return feature_df
@@ -271,30 +278,29 @@ class MealClustering:
         """
         Forms 10 clusters with input features to compare with carb clusters
         """
-        print("Extracting Hierarchical clusters ...")
+        print("Hierarchical Clustering ...")
 
         cluster = AgglomerativeClustering(n_clusters = 10, affinity='euclidean', linkage='ward')
         cluster.fit(new_features)
         y_label = cluster.labels_
         h_clusters_df = pd.DataFrame(y_label)
         new_features['h_clusters'] = y_label
-        print("Extracting clusters ... DONE.")
+        print("Hierarchical Clustering ... DONE.")
         return h_clusters_df
 
     def km_clustering(self, data):
         """
         Forms 10 clusters out of hierarchical clusters
         """
-        print("Extracting KMeans clusters ...")
+        print("K-Means Clustering ...")
         km = KMeans(n_clusters=10)
         km.fit(data)
         y_label = km.labels_
-        sil_score = silhouette_score(data, y_label)
-        print(f"Silhouette score : {sil_score}")
-        print("Extracting clusters ... DONE.")
+        print('SSE Score - ', km.inertia_)
+        print("K-Means Clustering ... DONE.")
         return y_label
 
-    # PCA
+    # PCA - NOT USED
     def reduce_dimensions(self, feature_df):
         print("Dimensionality reduction ...")
 
@@ -316,46 +322,40 @@ class MealClustering:
 
     def carbs_cluster(self, data):
         # print(data)
-        max_val = data.max()
-        min_val = data.min()
+
+        max_val = data['carbs'].max()
+        min_val = data['carbs'].min()
         range_val = (max_val - min_val) / 10
-        cluster_range = []
-        k = 0
-        temp_range = range_val[0]
-        for i in range(0, 10):
-            if i == 0:
-                cluster_range.append((k, temp_range))
+        carbs_labels=[]
+        for i in range(len(data)):
+            if data.iloc[i]['carbs'] == max_val:
+                carbs_labels.append(9)
             else:
-                cluster_range.append((k + 1, temp_range))
-            k = k + range_val[0]
-            temp_range += range_val[0]
-        carbs_cluster = []
-        for index, row in data.iterrows():
-            for i in range(len(cluster_range)):
-                low, high = cluster_range[i]
-                if low <= row[0] <= high:
-                    carbs_cluster.append(i)
-        data[1] = carbs_cluster
-        # print(data)
-        return carbs_cluster
+                carbs_labels.append(int((data.iloc[i]['carbs'] - min_val) // range_val))
+
+        return carbs_labels
 
     def map_feature_labels(self, feature_label, carbs_label):
         carb_to_feature = defaultdict(partial(np.array, 0))
         for i in range(0, len(carbs_label)):
             carb_to_feature[carbs_label[i]] = np.append(carb_to_feature[carbs_label[i]], feature_label[i])
         final_data = defaultdict()
-        for key in carb_to_feature:
-            counts = Counter(carb_to_feature[key])
-            final_data[key] = counts.most_common(1)[0][0]
-        print(final_data)
+        # for key in carb_to_feature:
+        #     counts = Counter(carb_to_feature[key])
+        #     final_data[key] = counts.most_common(1)[0][0]
+        # print(final_data)
         # TODO: Problem here.. since some clusters are not even there in the final mapped data
-        for i in range(len(feature_label)):
-            feature_label[i] = list(final_data.keys())[list(final_data.values()).index(feature_label[i])]
+        # for i in range(len(feature_label)):
+        #     feature_label[i] = list(final_data.keys())[list(final_data.values()).index(feature_label[i])]
+
+
+
         return feature_label
 
     def cluster_validation(self, labels_pred, labels_true):
-        cluster_score = metrics.adjusted_mutual_info_score(labels_true, labels_pred)
+        # cluster_score = metrics.adjusted_mutual_info_score(labels_true, labels_pred)
         # cluster_score = stats.entropy(labels_pred, labels_true)
+        cluster_score = sklearn.metrics.adjusted_rand_score(labels_true, labels_pred)
         print(f"CLUSTER SCORE:{cluster_score}")
 
     def run_model(self):
@@ -367,12 +367,12 @@ class MealClustering:
         raw_meal_df, raw_carb_df = self.read_data(input_path)
         processed_df, processed_carb_df = self.preprocess_data(raw_meal_df, raw_carb_df)
         feature_df = self.extract_features(processed_df)
-        reduced_feature_df = self.reduce_dimensions(feature_df)
-        h_clusters_df = self.h_clustering(reduced_feature_df)
+        #reduced_feature_df = self.reduce_dimensions(feature_df)
+        h_clusters_df = self.h_clustering(feature_df)
         feature_labels = self.km_clustering(h_clusters_df)
         carb_labels = self.carbs_cluster(processed_carb_df)
-        feature_labels = self.map_feature_labels(feature_labels, carb_labels)
-        print(f"Feature Labels: {feature_labels}\n Carb Labels:{carb_labels}")
+        # feature_labels = self.map_feature_labels(feature_labels, carb_labels)
+        # print(f"Feature Labels: {feature_labels}\n Carb Labels:{carb_labels}")
         self.cluster_validation(feature_labels, carb_labels)
 
 
