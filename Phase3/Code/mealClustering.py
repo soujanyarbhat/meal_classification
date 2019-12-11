@@ -23,6 +23,7 @@ from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics import silhouette_samples, silhouette_score
 from sklearn import metrics
+from sklearn.cluster import DBSCAN
 
 warnings.simplefilter(action = 'ignore', category = FutureWarning)
 import pickle
@@ -299,6 +300,18 @@ class MealClustering:
         print('SSE Score - ', km.inertia_)
         print("K-Means Clustering ... DONE.")
         return y_label
+    
+    def dbscan_clustering(self,data):
+        print("DBSCAN CLUSTERING.....")
+        data = StandardScaler().fit_transform(data)
+        db = DBSCAN(eps = 0.3, min_samples = 2).fit(data)
+        y_label = db.labels_
+        # print(f"Y-Label: {y_label}")
+        sil_score = silhouette_score(data,y_label)
+        # print("In DBSCAN")
+        print(f"Silhouette score : {sil_score}")
+        print("DBSCAN CLUSTERING DONE.....")
+        return y_label
 
     # PCA - NOT USED
     def reduce_dimensions(self, feature_df):
@@ -373,7 +386,13 @@ class MealClustering:
         carb_labels = self.carbs_cluster(processed_carb_df)
         # feature_labels = self.map_feature_labels(feature_labels, carb_labels)
         # print(f"Feature Labels: {feature_labels}\n Carb Labels:{carb_labels}")
+        print("KMEAN CLUSTER VALIDATION......")
         self.cluster_validation(feature_labels, carb_labels)
+
+        # DBSCAN CLUSTERING
+        dbscan_labels = self.dbscan_clustering(h_clusters_df)
+        print("DBSCAN CLUSTER VALIDATION.......")
+        self.cluster_validation(dbscan_labels, carb_labels)
 
 
 

@@ -94,6 +94,7 @@ class TestingMealClustering():
         feature_df = meal_obj.extract_features(processed_df)
         h_clusters_df = meal_obj.h_clustering(feature_df)
         _ = meal_obj.km_clustering(h_clusters_df)
+        _ = meal_obj.dbscan_clustering(h_clusters_df)
 
 
 if __name__ == '__main__':
