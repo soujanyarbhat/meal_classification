@@ -116,27 +116,27 @@ class MealClustering:
         """
         Windowed velocity(non-overlapping)- 30 mins intervals
         """
-        print("Extracting Velocity ...")
+        #print("Extracting Velocity ...")
 
         rows, cols = data_df.shape
         window_size = 5
         for i in range(0, cols - window_size):
             new_features['Vel_' + str(i)] = (data_df.iloc[:, i + window_size] - data_df.iloc[:, i])
 
-        print("Extracting Velocity ... DONE.")
+        #print("Extracting Velocity ... DONE.")
 
     def extract_mean(self, data_df, new_features):
         """
         # Windowed mean interval - 30 mins(non-overlapping)
         """
-        print("Extracting Mean ...")
+        #print("Extracting Mean ...")
 
         rows, cols = data_df.shape
         window_size = 5
         for i in range(0, cols, window_size):
             new_features['Mean_' + str(i)] = data_df.iloc[:, i:i + window_size].mean(axis = 1)
 
-        print("Extracting Mean ... DONE.")
+        #print("Extracting Mean ... DONE.")
 
     def extract_fft(self, data_df, new_features):
         """
@@ -246,7 +246,7 @@ class MealClustering:
         :param data_df:
         :return:
         """
-
+        print('Extracting Features ...')
         # Feature Matrix
         feature_df = pd.DataFrame()
         # FEATURE 1 -> Windowed velocity(non-overlapping)- 30 mins intervals
@@ -273,6 +273,7 @@ class MealClustering:
         #feature_df['Var'] = data_df.var(axis=1)
         # print("Feature size - ", feature_df.shape)
         #feature_df.to_csv("output.csv")
+        print('Extracting Features ... DONE.')
         return feature_df
 
     def h_clustering(self, new_features):
@@ -293,7 +294,7 @@ class MealClustering:
         """
         Forms 10 clusters out of hierarchical clusters
         """
-        print("K-Means Clustering ...")
+        print("\nK-Means Clustering ...")
         km = KMeans(n_clusters=10)
         km.fit(data)
         y_label = km.labels_
@@ -302,7 +303,7 @@ class MealClustering:
         return y_label
     
     def dbscan_clustering(self, data):
-        print("DBSCAN Clustering.....")
+        print("\nDBSCAN Clustering.....")
         data = StandardScaler().fit_transform(data)
         db = DBSCAN(eps = 0.3, min_samples = 2).fit(data)
         y_label = db.labels_
@@ -388,7 +389,7 @@ class MealClustering:
         carb_labels = self.carbs_cluster(processed_carb_df)
         # feature_labels = self.map_feature_labels(feature_labels, carb_labels)
         # print(f"Feature Labels: {feature_labels}\n Carb Labels:{carb_labels}")
-        self.cluster_validation(feature_labels, carb_labels)
+        #self.cluster_validation(feature_labels, carb_labels)
 
         # DBSCAN
         dbscan_labels = self.dbscan_clustering(h_clusters_df)
