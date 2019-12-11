@@ -301,16 +301,14 @@ class MealClustering:
         print("K-Means Clustering ... DONE.")
         return y_label
     
-    def dbscan_clustering(self,data):
-        print("DBSCAN CLUSTERING.....")
+    def dbscan_clustering(self, data):
+        print("DBSCAN Clustering.....")
         data = StandardScaler().fit_transform(data)
         db = DBSCAN(eps = 0.3, min_samples = 2).fit(data)
         y_label = db.labels_
-        # print(f"Y-Label: {y_label}")
-        sil_score = silhouette_score(data,y_label)
-        # print("In DBSCAN")
-        print(f"Silhouette score : {sil_score}")
-        print("DBSCAN CLUSTERING DONE.....")
+        sil_score = silhouette_score(data, y_label)
+        #print(f"Silhouette score : {sil_score}")
+        print("DBSCAN Clustering ... DONE.")
         return y_label
 
     # PCA - NOT USED
@@ -339,7 +337,7 @@ class MealClustering:
         max_val = data['carbs'].max()
         min_val = data['carbs'].min()
         range_val = (max_val - min_val) / 10
-        carbs_labels=[]
+        carbs_labels = []
         for i in range(len(data)):
             if data.iloc[i]['carbs'] == max_val:
                 carbs_labels.append(9)
@@ -366,10 +364,12 @@ class MealClustering:
         return feature_label
 
     def cluster_validation(self, labels_pred, labels_true):
+        print('Validating clusters ...')
         # cluster_score = metrics.adjusted_mutual_info_score(labels_true, labels_pred)
         # cluster_score = stats.entropy(labels_pred, labels_true)
         cluster_score = sklearn.metrics.adjusted_rand_score(labels_true, labels_pred)
         print(f"CLUSTER SCORE:{cluster_score}")
+        print('Validating clusters ... DONE.')
 
     def run_model(self):
         """
@@ -381,21 +381,18 @@ class MealClustering:
         processed_df, processed_carb_df = self.preprocess_data(raw_meal_df, raw_carb_df)
         feature_df = self.extract_features(processed_df)
         #reduced_feature_df = self.reduce_dimensions(feature_df)
+
+        # K-MEANS
         h_clusters_df = self.h_clustering(feature_df)
         feature_labels = self.km_clustering(h_clusters_df)
         carb_labels = self.carbs_cluster(processed_carb_df)
         # feature_labels = self.map_feature_labels(feature_labels, carb_labels)
         # print(f"Feature Labels: {feature_labels}\n Carb Labels:{carb_labels}")
-        print("KMEAN CLUSTER VALIDATION......")
         self.cluster_validation(feature_labels, carb_labels)
 
-        # DBSCAN CLUSTERING
+        # DBSCAN
         dbscan_labels = self.dbscan_clustering(h_clusters_df)
-        print("DBSCAN CLUSTER VALIDATION.......")
         self.cluster_validation(dbscan_labels, carb_labels)
-
-
-
 
 
 if __name__ == '__main__':
