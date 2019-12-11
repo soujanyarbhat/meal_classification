@@ -23,13 +23,19 @@ class TestingMealClustering():
         Input path for data set- USER INPUT
         :return: input folder path
         """
-        print("Reading input file path ... ")
+        print("Reading test file path ... ")
 
-        folder_path = input('Please enter the file path </path/to/meal.csv> : \n')
+        current_dir = os.path.dirname(__file__)
+        file_path = os.path.join(current_dir, '..', 'Test', 'Test.csv')
+        pre_configured_path = os.path.abspath(file_path)
+        temp_file_path = input('Please enter the test file path\n'
+                               'OR\nHit enter to use %s: ' % pre_configured_path)
+        if temp_file_path.strip() != '':
+            file_path = temp_file_path.strip()
 
-        print("Reading input file path ... DONE.")
+        print("Reading test file path ... DONE.")
+        return file_path
 
-        return folder_path
 
     def read_data(self, input_path):
         """
