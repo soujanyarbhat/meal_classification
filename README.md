@@ -1,32 +1,29 @@
-# meal_classification
-Given sugar values over a 150 minutes time period, classify each instance as "meal"(= 1) or "no meal"(= 0).
+# meal clustering
+
+GROUP (24) MEMBERS:
+1. Varun Chaudhary
+2. Soujanya R Bhat
+3. Aryan Gupta
+4. Gourav Agarwal
+
+Given sugar values over a 150 minutes time period.
+Carbohydrate file containing the carb levels in each meal taken.
 
 ABSTRACT:
-The aim of the project is to design a model to detect whether a meal was actually taken in the recorded data or not.
-
-FEATURES:
-1. Maximum window velocity
-2. Windowed mean
-3. Fast fourier transform
-4. Entropy
-5. Polynomial fit
+The aim of the project is to design a model to cluster meal data using K-Means and DBSCAN methods.
 
 PROJECT STRUCTURE:
-1. Code - contains the classifier script and the testing script.
-2. Input - contains the given data set for training model.
-3. Model - contains the saved classifiers of each member.
-4. Output - Will contain the predictions of chosen models.
+1. Code - contains the clustering script and the testing script.
+2. Input - contains the given data set for clustering.
 
 EXECUTION INSTRUCTIONS:
 
-1. Classifier script<br>
-python mealclassifier.py<br>
+1. Clustering script<br>
+python mealClustering.py<br>
 Input- path to training data set directory(or ENTER for default "Input/" dir)<br>
-Output- classifiers in "Model/" directory(as pickle files).
-Filename format- "<classifier name \>_<member name\>.sav"
+Output- Clustering score for K-Means and DBSCAN.
 
 2. Test script<br>
-python test_mealclassifier.py<br>
+python testing_mealClustering.py<br>
 Input- path to test file<br>
-Output- predictions in "Output/" directory(as CSV files).
-Filename format- "predictions_<member name\>.sav"
+Output- Clustering score for K-Means and DBSCAN.
