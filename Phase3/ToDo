@@ -1,4 +1,4 @@
 To Do
-1. DBSCAN
-2. Find feature combo for best SSE/RAND score
+1. DBSCAN - SSE alternative
+2. Find feature combo for best SSE/RAND score - Velocity + Mean ?
 3. Finalize output required for test data

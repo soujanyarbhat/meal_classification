@@ -272,7 +272,7 @@ class MealClustering:
         #feature_df['Min'] = data_df.min(axis=1)
         #feature_df['Var'] = data_df.var(axis=1)
         # print("Feature size - ", feature_df.shape)
-        feature_df.to_csv("output.csv")
+        #feature_df.to_csv("output.csv")
         return feature_df
 
     def h_clustering(self, new_features):
