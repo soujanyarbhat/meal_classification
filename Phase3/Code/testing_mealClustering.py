@@ -89,3 +89,4 @@ class TestingMealClustering():
 if __name__ == '__main__':
     meal_cluster = TestingMealClustering()
     meal_cluster.run_model()
+    print("\nTesting Meal Clustering Model ... DONE.")
