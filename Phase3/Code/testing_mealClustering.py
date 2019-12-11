@@ -25,14 +25,7 @@ class TestingMealClustering():
         """
         print("Reading test file path ... ")
 
-        current_dir = os.path.dirname(__file__)
-        file_path = os.path.join(current_dir, '..', 'Test', 'Test.csv')
-        pre_configured_path = os.path.abspath(file_path)
-        temp_file_path = input('Please enter the test file path\n'
-                               'OR\nHit enter to use %s: ' % pre_configured_path)
-        if temp_file_path.strip() != '':
-            file_path = temp_file_path.strip()
-
+        file_path = input('Please enter the file path </path/to/meal.csv> :\n')
         print("Reading test file path ... DONE.")
         return file_path
 
@@ -87,8 +80,10 @@ class TestingMealClustering():
         raw_meal_df = self.read_data(input_path)
         processed_df = self.preprocess_data(raw_meal_df)
         feature_df = meal_obj.extract_features(processed_df)
+        # K-MEANS
         h_clusters_df = meal_obj.h_clustering(feature_df)
         _ = meal_obj.km_clustering(h_clusters_df)
+        # DBSCAN
         _ = meal_obj.dbscan_clustering(h_clusters_df)
 
 
