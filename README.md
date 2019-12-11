@@ -21,6 +21,8 @@ PROJECT STRUCTURE:
 
 EXECUTION INSTRUCTIONS:
 
+Using the terminal, navigate inside Code/ folder.
+
 1. Clustering script<br>
 python mealClustering.py<br>
 Input- path to training data set directory(or ENTER for default "Input/" dir)<br>
