@@ -31,7 +31,7 @@ import pickle
 
 class MealClustering:
 
-    OUTPUT_PATH_MODEL = os.path.join(os.path.dirname(__file__), '..', 'Model')
+    OUTPUT_PATH = os.path.join(os.path.dirname(__file__), '..', 'Output/')
 
     def __init__(self):
         print("Meal Clustering Model ...")
@@ -290,7 +290,7 @@ class MealClustering:
         print("Hierarchical Clustering ... DONE.")
         return h_clusters_df
 
-    def km_clustering(self, data):
+    def km_clustering(self, data, file_path):
         """
         Forms 10 clusters out of hierarchical clusters
         """
@@ -299,16 +299,23 @@ class MealClustering:
         km.fit(data)
         y_label = km.labels_
         print('SSE Score - ', km.inertia_)
+        print('K-Means Cluster Labels -')
+        print(*y_label, sep = ',')
+        np.savetxt(file_path, y_label, delimiter = ",", fmt = '%1.0f')
+        print('K-Means cluster labels saved in file - \n', file_path)
         print("K-Means Clustering ... DONE.")
         return y_label
     
-    def dbscan_clustering(self, data):
+    def dbscan_clustering(self, data, file_path):
         print("\nDBSCAN Clustering.....")
         data = StandardScaler().fit_transform(data)
         db = DBSCAN(eps = 0.3, min_samples = 2).fit(data)
         y_label = db.labels_
-        sil_score = silhouette_score(data, y_label)
         #print(f"Silhouette score : {sil_score}")
+        print('DBSCAN Cluster Labels -')
+        print(*y_label, sep = ',')
+        np.savetxt(file_path, y_label, delimiter = ",", fmt = '%1.0f')
+        print('DBSCAN cluster labels saved in file - \n', file_path)
         print("DBSCAN Clustering ... DONE.")
         return y_label
 
@@ -360,8 +367,6 @@ class MealClustering:
         # for i in range(len(feature_label)):
         #     feature_label[i] = list(final_data.keys())[list(final_data.values()).index(feature_label[i])]
 
-
-
         return feature_label
 
     def cluster_validation(self, labels_pred, labels_true):
@@ -369,7 +374,7 @@ class MealClustering:
         # cluster_score = metrics.adjusted_mutual_info_score(labels_true, labels_pred)
         # cluster_score = stats.entropy(labels_pred, labels_true)
         cluster_score = sklearn.metrics.adjusted_rand_score(labels_true, labels_pred)
-        print(f"CLUSTER SCORE:{cluster_score}")
+        print(f"ADJUSTED RAND CLUSTER SCORE:{cluster_score}")
         print('Validating clusters ... DONE.')
 
     def run_model(self):
@@ -385,14 +390,14 @@ class MealClustering:
 
         # K-MEANS
         h_clusters_df = self.h_clustering(feature_df)
-        feature_labels = self.km_clustering(h_clusters_df)
+        feature_labels = self.km_clustering(h_clusters_df, self.OUTPUT_PATH + "kmeans_labels.csv")
         carb_labels = self.carbs_cluster(processed_carb_df)
         # feature_labels = self.map_feature_labels(feature_labels, carb_labels)
         # print(f"Feature Labels: {feature_labels}\n Carb Labels:{carb_labels}")
         #self.cluster_validation(feature_labels, carb_labels)
 
         # DBSCAN
-        dbscan_labels = self.dbscan_clustering(h_clusters_df)
+        dbscan_labels = self.dbscan_clustering(h_clusters_df, self.OUTPUT_PATH + "dbscan_labels.csv")
         self.cluster_validation(dbscan_labels, carb_labels)
 
 

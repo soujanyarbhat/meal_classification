@@ -12,7 +12,7 @@ from mealClustering import MealClustering
 
 class TestingMealClustering():
 
-    OUTPUT_PATH_MODEL = os.path.join(os.path.dirname(__file__), '..', 'Model')
+    OUTPUT_PATH = os.path.join(os.path.dirname(__file__), '..', 'Output_Test/')
 
     def __init__(self):
         print("Testing Meal Clustering Model ...")
@@ -66,7 +66,7 @@ class TestingMealClustering():
         del raw_meal_df['Col31']
         processed_meal_df = raw_meal_df.iloc[:, ::-1].dropna(how = 'all')
         processed_meal_df.interpolate(method='linear', inplace=True)
-        print('Processed data size - ', processed_meal_df.shape)
+        #print('Processed data size - ', processed_meal_df.shape)
         print("Pre-processing ... DONE.")
         return processed_meal_df
 
@@ -80,11 +80,13 @@ class TestingMealClustering():
         raw_meal_df = self.read_data(input_path)
         processed_df = self.preprocess_data(raw_meal_df)
         feature_df = meal_obj.extract_features(processed_df)
-        # K-MEANS
+        # K-MEANS - dataframe and file path to save results
         h_clusters_df = meal_obj.h_clustering(feature_df)
-        _ = meal_obj.km_clustering(h_clusters_df)
-        # DBSCAN
-        _ = meal_obj.dbscan_clustering(h_clusters_df)
+        kmeans_labels = meal_obj.km_clustering(h_clusters_df, self.OUTPUT_PATH + "kmeans_labels.csv")
+        # DBSCAN - dataframe and file path to save results
+        dbscan_labels = meal_obj.dbscan_clustering(h_clusters_df, self.OUTPUT_PATH + "dbscan_labels.csv")
+
+
 
 
 if __name__ == '__main__':

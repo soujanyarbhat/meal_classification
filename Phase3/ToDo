@@ -1,4 +1,3 @@
 To Do
-1. DBSCAN - SSE alternative
+1. DBSCAN - working without hierarchical
 2. Find feature combo for best SSE/RAND score - Velocity + Mean ?
-3. Finalize output required for test data
