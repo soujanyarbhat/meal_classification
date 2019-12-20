@@ -15,7 +15,9 @@ Prior to feature extraction, the original data was processed to improve the resu
 4. The missing CGM values were linearly interpolated.
 5. The missing time-series values were computed assuming each meal span was 2.5 hours with 5 minutes intervals.
 
-    
+!.[Sample Data](https://imgur.com/4rr8WcO)
+
+!.[Sample Data](https://imgur.com/9QaA6BQ)
     
 **Intuition**
 	
