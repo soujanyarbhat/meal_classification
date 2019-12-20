@@ -56,7 +56,6 @@ Components - a 16 x 16 matrix, representing the Eigenvectors and the columns are
 Explained Variance - The percentage of variance depicted by each Principal Component.
 Selecting the first 5 Principal Components would represent 92.00% of the information with the first principal component contributing upto 52.45% of the information as shown in the Variance graph below. This depicts that 92% of the original data can be represented using only 5 features instead of 16, thereby PCA is optimally used for dimensionality reduction.
 
-Figure 10: Principal components- Variance %
 
 The higher value of the weight or component signifies that most of the data lies along that feature component of the eigenvector. 
 Example - In principal component 1, the columns corresponding to FFT features have higher values which means that these features contribute maximum to the data along this principal component.
@@ -66,8 +65,6 @@ Since the selected features contribute to the different principal components in 
 
 
 The below plots show how each Principal component vector represents data when data is projected along these vectors individually.
-
-Figure 12: Principal components v/s Time-series- Patient 1
 
 
 
