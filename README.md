@@ -15,9 +15,6 @@ Prior to feature extraction, the original data was processed to improve the resu
 4. The missing CGM values were linearly interpolated.
 5. The missing time-series values were computed assuming each meal span was 2.5 hours with 5 minutes intervals.
 
-
-
-Figure 1: Updated original values(CGM values and time series)
     
     
 **Intuition**
@@ -27,14 +24,6 @@ The primary idea on choosing the features was to learn the common shape of given
 Ideally, for the 2.5 hours meal window the glucose levels would take a normal value for the first 30 mins, then experience a sharp rise due to food intake, settle at the peak and fall due to the insulin keeping the glucose levels in check. It is this pattern that we wish our model to learn and use to classify the “meal” and “non-meal” class labels.
 
 
-
-Figure 2: Sample plots, Patient 1 Lunch 1 and 2
-
-
-Figure 3: Auto-correlation Patient 1
-
-
-Figure 4: Cross-correlation(Patient 1)
 
 
 **Feature Extraction**
@@ -52,10 +41,6 @@ Entropy
 Final Feature Matrix
 
 Since patient 1 contained 33 days lunch data, our final feature matrix(as input to PCA) contains 33X16 where 16 is the number of features.
-
-
-
-Figure 9: Final feature matrix
 
 
 
@@ -78,8 +63,6 @@ Example - In principal component 1, the columns corresponding to FFT features ha
 
 Since the selected features contribute to the different principal components in majority at different instances, the selection criteria can be termed successful.
 
-
-Figure 11: Eigen-vectors of PCA
 
 
 The below plots show how each Principal component vector represents data when data is projected along these vectors individually.
