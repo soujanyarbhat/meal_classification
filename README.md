@@ -31,13 +31,15 @@ Ideally, for the 2.5 hours meal window the glucose levels would take a normal va
 **Feature Extraction**
 The following features were chosen to contain high discriminative features for the given time-series data:
 
-Maximum Windowed Velocity
+1. Maximum Windowed Velocity
 
-Windowed Averages
+2. Windowed Averages
 
-Fast Fourier Transformation
+4. Fast Fourier Transformation
 
-Entropy
+5. Entropy
+
+6. Polynomial Fit
 
 
 Final Feature Matrix
