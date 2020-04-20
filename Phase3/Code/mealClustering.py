@@ -252,7 +252,7 @@ class MealClustering:
         # FEATURE 1 -> Windowed velocity(non-overlapping)- 30 mins intervals
         self.extract_velocity(data_df, feature_df)
         # FEATURE 2 -> Windowed mean interval - 30 mins(non-overlapping)
-        self.extract_mean(data_df, feature_df)
+        #self.extract_mean(data_df, feature_df)
         # FEATURE 3 -> FFT- Finding top 8 values for each row
         #feature_df = self.extract_fft(data_df, feature_df)
         # FEATURE 4 -> Calculates entropy(from occurrences of each value) of given series
@@ -394,7 +394,7 @@ class MealClustering:
         carb_labels = self.carbs_cluster(processed_carb_df)
         # feature_labels = self.map_feature_labels(feature_labels, carb_labels)
         # print(f"Feature Labels: {feature_labels}\n Carb Labels:{carb_labels}")
-        #self.cluster_validation(feature_labels, carb_labels)
+        self.cluster_validation(feature_labels, carb_labels)
 
         # DBSCAN
         dbscan_labels = self.dbscan_clustering(h_clusters_df, self.OUTPUT_PATH + "dbscan_labels.csv")

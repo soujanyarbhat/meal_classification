@@ -28,22 +28,22 @@ Using the terminal, navigate inside Code/ folder.
 1. Clustering script<br>
 python mealClustering.py<br>
 Input- path to training data set directory(or ENTER for default "Input/" dir)<br>
-Output(terminal)- 
-a. Clustering labels for K-Means and DBSCAN. 
-b. Location of files saved with cluster labels.
-c. SSE Score(K-Means) and Adjusted Rand Score(DBSCAN)
-Output (file)-
-Cluster Labels corresponding to each row 
-a. Output/kmeans_labels.csv
-b. Output/dbscan_labels.csv
+Output(terminal)- <br>
+a. Clustering labels for K-Means and DBSCAN. <br>
+b. Location of files saved with cluster labels.<br>
+c. SSE Score(K-Means) and Adjusted Rand Score(DBSCAN)<br>
+Output (file)-<br>
+Cluster Labels corresponding to each row <br>
+a. Output/kmeans_labels.csv<br>
+b. Output/dbscan_labels.csv<br>
 
 2. Test script<br>
 python testing_mealClustering.py<br>
 Input- path to test file<br>
-Output(terminal)- 
-a. Clustering labels for K-Means and DBSCAN. 
-b. Location of files saved with cluster labels.
-Output (file)-
-Cluster Labels corresponding to each row 
-a. Output_Test/kmeans_labels.csv
+Output(terminal)- <br>
+a. Clustering labels for K-Means and DBSCAN. <br>
+b. Location of files saved with cluster labels.<br>
+Output (file)-<br>
+Cluster Labels corresponding to each row <br>
+a. Output_Test/kmeans_labels.csv<br>
 b. Output_Test/dbscan_labels.csv
