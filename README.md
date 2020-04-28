@@ -1,11 +1,5 @@
-<<<<<<< HEAD
-# meal clustering
-
-GROUP (24) MEMBERS:
-1. Varun Chaudhary
-2. Soujanya R Bhat
-3. Aryan Gupta
-4. Gourav Agarwal
+# Only for project showcase. Copy at your own risk.
+# meal clustering/classification
 
 Given sugar values over a 150 minutes time period.
 Carbohydrate file containing the carb levels in each meal taken.
