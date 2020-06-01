@@ -125,3 +125,5 @@ The below plots show how each Principal component vector represents data when da
 “Data-driven strategies for robust forecast of continuous glucose monitoring time-series.” Conference proceedings: ... Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society. Conference. 2017. 1680-1683. 10.1109/EMBC.2017.8037164. 
 [3] Chen, Xiao-yun et al. “Entropy-Based Symbolic Representation for Time Series Classification.” Fourth International Conference on Fuzzy Systems and Knowledge Discovery (FSKD 2007) 2 (2007): 754-760.
 >>>>>>> dcf20a50a907cbc9b31b845817b109f4ddb0a31b
+
+published site: https://soujanyarbhat.github.io/meal_classification/
